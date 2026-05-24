@@ -1,16 +1,21 @@
 # %%
 import ply.lex as lex
 import ply.yacc as yacc
-from arbol import Literal, BinaryOp, Program, Assignment, Declaration, Declarations
+from arbol import (Literal, BinaryOp, Program, Assignment,
+                   Declaration, Declarations, IfStatement, Variable, Block)
 
 reserved_words = {
     'int':   'INT_TYPE',
     'bool':  'BOOL_TYPE',
     'float': 'FLOAT_TYPE',
     'char':  'CHAR_TYPE',
+    'if':    'IF',
+    'else':  'ELSE',
 }
 
-tokens = ['ID', 'INTLIT', 'INT_TYPE', 'BOOL_TYPE', 'FLOAT_TYPE', 'CHAR_TYPE']
+tokens = ['ID', 'INTLIT', 
+          'INT_TYPE', 'BOOL_TYPE', 'FLOAT_TYPE', 'CHAR_TYPE', 
+          'IF', 'ELSE']
 t_ignore = ' \t'
 literals = '+-*/%(){},;='
 
@@ -63,6 +68,12 @@ def p_Type(p):
     """
     p[0] = p[1]
 
+def p_Block(p):
+    """
+    Block : '{' Statements '}'
+    """
+    p[0] = p[2]
+
 def p_Statements(p):
     """
     Statements : Statements Statement
@@ -75,7 +86,9 @@ def p_Statements(p):
 
 def p_Statement(p):
     """
-    Statement : Assignment
+    Statement : Block
+              | Assignment
+              | IfStatement
     """
     p[0] = p[1]
 
@@ -96,6 +109,16 @@ def p_Expression(p):
     else:
         p[0] = BinaryOp(p[2], p[1], p[3])
 
+def p_IfStatement(p):
+    """
+    IfStatement : IF '(' Expression ')' Statement 
+                | IF '(' Expression ')' Statement ELSE Statement
+    """
+    if len(p) == 6:
+        p[0] = IfStatement(p[3], p[5], None)
+    else:
+        p[0] = IfStatement(p[3], p[5], p[7])
+
 def p_Term(p):
     """
     Term : Term '*' Factor
@@ -111,13 +134,16 @@ def p_Term(p):
 def p_Factor(p):
     """
     Factor : INTLIT
+           | ID
            | '(' Expression ')'
     """
     if len(p) == 2:
-        p[0] = Literal(p[1], 'INT')
+        if isinstance(p[1], int):
+            p[0] = Literal(p[1], 'INT')
+        else:
+            p[0] = Variable(p[1], 'ID')
     else:
         p[0] = p[2]
-
 def p_error(p):
     print("Syntax error in input!", p)
 
@@ -174,7 +200,14 @@ class IRGenerator(Visitor):
             builder.store(tmp, self.symbol_table[node.variable])
 
     def visit_variable(self, node: Variable) -> None:
-        pass
+        if node.name not in self.symbol_table:
+            raise KeyError(f"Undeclared variable: {node.name}")
+        val = builder.load(self.symbol_table[node.name], name=node.name)
+        self.stack.append(val)
+    
+    def visit_block(self, node: Block) -> None:
+        for stmt in node.stmts:
+            stmt.accept(self)
 
     def visit_binary_op(self, node: BinaryOp) -> None:
         node.lhs.accept(self)
@@ -191,15 +224,66 @@ class IRGenerator(Visitor):
             self.stack.append(builder.sdiv(lhs,rhs))
         elif node.op == "%":
             self.stack.append(builder.srem(lhs, rhs))
+    
+    def visit_if_statement(self, node: IfStatement) -> None:
+        node.condition.accept(self)
+        cond = self.stack.pop()
+        cond_bool = builder.icmp_signed('!=', cond, ir.Constant(intType, 0))
 
-data   = """
+        if node.else_stmt is None:
+            then_block  = func.append_basic_block('then')
+            merge_block = func.append_basic_block('merge')
+
+            builder.cbranch(cond_bool, then_block, merge_block)
+
+            builder.position_at_end(then_block)
+            for stmt in node.then_stmt:
+                stmt.accept(self)
+            builder.branch(merge_block)
+
+            builder.position_at_end(merge_block)
+        else:
+            then_block  = func.append_basic_block('then')
+            else_block  = func.append_basic_block('else')
+            merge_block = func.append_basic_block('merge')
+
+            builder.cbranch(cond_bool, then_block, else_block)
+
+            builder.position_at_end(then_block)
+            for stmt in node.then_stmt:
+                stmt.accept(self)
+            builder.branch(merge_block)
+
+            builder.position_at_end(else_block)
+            for stmt in node.else_stmt:
+                stmt.accept(self)
+            builder.branch(merge_block)
+
+            builder.position_at_end(merge_block)
+
+data = """
 int main()
 {
-    int f;
-    int i;
+    int a;
+    int b;
 
-    f = 10;
-    i = 1;
+    a = 10;
+    b = 5;
+
+    a = 10 + 5 * 2;
+
+    b = (10 + 5) * 2;
+
+    if (a)
+    {
+        a = a + 1;
+        b = b - 1;
+    }
+    else
+    {
+        a = a - 1;
+        b = b + 1;
+    }
 }
 """
 
