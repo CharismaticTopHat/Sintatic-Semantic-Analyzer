@@ -3,12 +3,20 @@ import ply.lex as lex
 import ply.yacc as yacc
 from arbol import Literal, BinaryOp, Program, Assignment, Declaration, Declarations
 
-tokens   = ['ID', 'INTLIT']
+reserved_words = {
+    'int':   'INT_TYPE',
+    'bool':  'BOOL_TYPE',
+    'float': 'FLOAT_TYPE',
+    'char':  'CHAR_TYPE',
+}
+
+tokens = ['ID', 'INTLIT', 'INT_TYPE', 'BOOL_TYPE', 'FLOAT_TYPE', 'CHAR_TYPE']
 t_ignore = ' \t'
 literals = '+-*/%(){},;='
 
 def t_ID(t):
     r'[a-zA-Z_][a-zA-Z_0-9]*'
+    t.type = reserved_words.get(t.value, 'ID')
     return t
 
 def t_INTLIT(t):
@@ -26,7 +34,7 @@ def t_error(t):
 
 def p_Program(p):
     """
-    Program : ID ID '(' ')' '{' Declarations Statements '}'
+    Program : Type ID '(' ')' '{' Declarations Statements '}'
     """
     p[0] = Program(p[6], p[7])
 
@@ -42,9 +50,18 @@ def p_Declarations(p):
 
 def p_Declaration(p):
     """
-    Declaration : ID ID ';'
+    Declaration : Type ID ';'
     """
     p[0] = Declaration(p[2], p[1])
+
+def p_Type(p):
+    """
+    Type : INT_TYPE
+         | BOOL_TYPE
+         | FLOAT_TYPE
+         | CHAR_TYPE
+    """
+    p[0] = p[1]
 
 def p_Statements(p):
     """
@@ -105,22 +122,8 @@ def p_error(p):
     print("Syntax error in input!", p)
 
 lexer  = lex.lex()
-parser = yacc.yacc()
+parser = yacc.yacc(write_tables=False, debug=False)
 
-# %%
-"""
-from arbol import Calculator
-
-data   = '10 + 5 * 3'
-lexer  = lex.lex()
-parser = yacc.yacc()
-
-root = parser.parse(data)
-calc = Calculator()
-root.accept(calc)
-
-print(calc.stack)
-"""
 # %%
 from arbol import Visitor, Variable
 from llvmlite import ir
@@ -145,9 +148,17 @@ class IRGenerator(Visitor):
         node.decls.accept(self)
         for stmt in node.stmts:
             stmt.accept(self)
+        builder.ret(ir.Constant(intType, 0))
 
     def visit_declaration(self, node: Declaration) -> None:
-        self.symbol_table[node.variable] = builder.alloca(intType, name=node.variable)
+        type_map = {
+            'int':   ir.IntType(32),
+            'float': ir.FloatType(),
+            'bool':  ir.IntType(1),
+            'char':  ir.IntType(8),
+        }
+        llvm_type = type_map.get(node.type, ir.IntType(32))
+        self.symbol_table[node.variable] = builder.alloca(llvm_type, name=node.variable)
 
     def visit_declarations(self, node: Declarations) -> None:
         if node.decls is not None:
@@ -193,13 +204,9 @@ int main()
 """
 
 root = parser.parse(data)
-
 print(root)
-
 irgen = IRGenerator()
 root.accept(irgen)
-#builder.ret(irgen.stack.pop())
-
 print(module)
 
 # %%
