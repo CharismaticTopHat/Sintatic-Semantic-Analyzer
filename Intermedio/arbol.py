@@ -19,12 +19,18 @@ class Program(ASTNode):
         return f"Program(decls={self.decls}, stmts={self.stmts})"
 
 class Assignment(ASTNode):
-    def __init__(self, variable: Any, expression: ASTNode) -> None:
+    def __init__(self, variable: Any, assignment: ASTNode) -> None:
         self.variable   = variable
-        self.expression = expression
+        self.assignment = assignment
 
     def accept(self, visitor: Visitor):
         visitor.visit_assignment(self)
+
+    def __str__(self):
+        return f"Assignment(var={self.variable}, expr={self.assignment})"
+
+    def accept(self, visitor: Visitor):
+        visitor.visit_expression(self)
 
     def __str__(self):
         return f"Assignment(var={self.variable}, expr={self.expression})"

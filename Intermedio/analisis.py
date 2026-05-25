@@ -16,7 +16,9 @@ reserved_words = {
 
 tokens = ['ID', 'INTLIT', 
           'INT_TYPE', 'BOOL_TYPE', 'FLOAT_TYPE', 'CHAR_TYPE', 
-          'IF', 'ELSE', 'WHILE']
+          'IF', 'ELSE', 'WHILE',
+          'OR']
+t_OR=r'\|\|'
 t_ignore = ' \t'
 literals = '+-*/%(){},;='
 
@@ -102,9 +104,8 @@ def p_Assignment(p):
 
 def p_Expression(p):
     """
-    Expression : Expression '+' Term
-               | Expression '-' Term
-               | Term
+    Expression : Expression OR Conjunction
+               | Conjunction
     """
     if len(p) == 2:
         p[0] = p[1]
@@ -206,7 +207,7 @@ class IRGenerator(Visitor):
             raise KeyError(f"Undeclared variable: {node.variable}")
         else:
             builder.store(tmp, self.symbol_table[node.variable])
-
+            
     def visit_variable(self, node: Variable) -> None:
         if node.name not in self.symbol_table:
             raise KeyError(f"Undeclared variable: {node.name}")
