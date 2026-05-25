@@ -41,6 +41,17 @@ class IfStatement(ASTNode):
     def __str__(self):
         return f"IfStatement(cond={self.condition}, then={self.then_stmt}, else={self.else_stmt})"
 
+class WhileStatement(ASTNode):
+    def __init__(self, condition: ASTNode, body: ASTNode) -> None:
+        self.condition = condition
+        self.body      = body
+
+    def accept(self, visitor: Visitor):
+        visitor.visit_while_statement(self)
+
+    def __str__(self):
+        return f"WhileStatement(cond={self.condition}, body={self.body})"
+
 class Declaration(ASTNode):
     def __init__(self, variable: Any, type: str) -> None:
         self.variable = variable
@@ -118,6 +129,10 @@ class Visitor(ABC):
 
     @abstractmethod
     def visit_binary_op(self, node: BinaryOp) -> None:
+        pass
+
+    @abstractmethod
+    def visit_while_statement(self, node: WhileStatement) -> None:
         pass
 
     @abstractmethod

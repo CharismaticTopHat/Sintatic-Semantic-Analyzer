@@ -2,7 +2,7 @@
 import ply.lex as lex
 import ply.yacc as yacc
 from arbol import (Literal, BinaryOp, Program, Assignment,
-                   Declaration, Declarations, IfStatement, Variable, Block)
+                   Declaration, Declarations, IfStatement, WhileStatement, Variable, Block)
 
 reserved_words = {
     'int':   'INT_TYPE',
@@ -11,11 +11,12 @@ reserved_words = {
     'char':  'CHAR_TYPE',
     'if':    'IF',
     'else':  'ELSE',
+    'while': 'WHILE',
 }
 
 tokens = ['ID', 'INTLIT', 
           'INT_TYPE', 'BOOL_TYPE', 'FLOAT_TYPE', 'CHAR_TYPE', 
-          'IF', 'ELSE']
+          'IF', 'ELSE', 'WHILE']
 t_ignore = ' \t'
 literals = '+-*/%(){},;='
 
@@ -72,7 +73,7 @@ def p_Block(p):
     """
     Block : '{' Statements '}'
     """
-    p[0] = p[2]
+    p[0] = Block(p[2])
 
 def p_Statements(p):
     """
@@ -89,6 +90,7 @@ def p_Statement(p):
     Statement : Block
               | Assignment
               | IfStatement
+              | WhileStatement
     """
     p[0] = p[1]
 
@@ -118,6 +120,12 @@ def p_IfStatement(p):
         p[0] = IfStatement(p[3], p[5], None)
     else:
         p[0] = IfStatement(p[3], p[5], p[7])
+
+def p_WhileStatement(p):
+    """
+    WhileStatement : WHILE '(' Expression ')' Statement
+    """
+    p[0] = WhileStatement(p[3], p[5])
 
 def p_Term(p):
     """
@@ -225,6 +233,25 @@ class IRGenerator(Visitor):
         elif node.op == "%":
             self.stack.append(builder.srem(lhs, rhs))
     
+    def visit_while_statement(self, node: WhileStatement) -> None:
+        cond_block  = func.append_basic_block('while_cond')
+        body_block  = func.append_basic_block('while_body')
+        merge_block = func.append_basic_block('while_merge')
+
+        builder.branch(cond_block)
+
+        builder.position_at_end(cond_block)
+        node.condition.accept(self)
+        cond      = self.stack.pop()
+        cond_bool = builder.icmp_signed('!=', cond, ir.Constant(intType, 0))
+        builder.cbranch(cond_bool, body_block, merge_block)
+
+        builder.position_at_end(body_block)
+        node.body.accept(self)
+        builder.branch(cond_block)
+
+        builder.position_at_end(merge_block)
+
     def visit_if_statement(self, node: IfStatement) -> None:
         node.condition.accept(self)
         cond = self.stack.pop()
@@ -268,21 +295,12 @@ int main()
     int b;
 
     a = 10;
-    b = 5;
+    b = 0;
 
-    a = 10 + 5 * 2;
-
-    b = (10 + 5) * 2;
-
-    if (a)
+    while (a)
     {
-        a = a + 1;
-        b = b - 1;
-    }
-    else
-    {
-        a = a - 1;
         b = b + 1;
+        a = a - 1;
     }
 }
 """
