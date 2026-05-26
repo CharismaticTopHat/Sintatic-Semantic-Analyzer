@@ -22,8 +22,8 @@ reserved_words = {
     'return':'RETURN',
     'switch':'SWITCH',
     'case':  'CASE',
-    'default': 'DEFAULT',
-    'break': 'BREAK'
+    'default':'DEFAULT',
+    'break': 'BREAK',
 }
 
 tokens = ['ID', 'INTLIT', 'FLOATLIT', 'CHARLIT',
@@ -570,6 +570,9 @@ class IRGenerator(Visitor):
     def visit_case(self, node):
         pass
 
+    def visit_call(self, note):
+        self.stack.append(ir.Constant(intType, 0))
+
     def visit_unary_op(self, node: UnaryOp) -> None:
         node.operand.accept(self)
 
@@ -713,36 +716,27 @@ class IRGenerator(Visitor):
 
         builder.position_at_end(end_block)
 
-data = """
-int main()
+# Fibonacci
+
+data1 = """
+int fibonacci(int n)
 {
-    int x;
-    int y;
+    int result;
 
-    x = 2;
-    y = 0;
-
-    switch (x)
+    if (n <= 1)
     {
-        case 1:
-            y = 10;
-            break;
-
-        case 2:
-            y = 20;
-            break;
-
-        case 3:
-            y = 30;
-            break;
-
-        default:
-            y = -1;
+        result = n;
     }
+    else
+    {
+        result = fibonacci(n - 1) + fibonacci(n - 2);
+    }
+
+    return result;
 }
 """
 
-root = parser.parse(data)
+root = parser.parse(data1)
 print(root)
 irgen = IRGenerator()
 root.accept(irgen)
