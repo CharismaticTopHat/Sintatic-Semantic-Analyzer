@@ -12,14 +12,18 @@ reserved_words = {
     'if':    'IF',
     'else':  'ELSE',
     'while': 'WHILE',
+    'true':  'TRUE',
+    'false': 'FALSE'
 }
 
-tokens = ['ID', 'INTLIT', 
+tokens = ['ID', 'INTLIT', 'FLOATLIT', 'CHARLIT',
           'INT_TYPE', 'BOOL_TYPE', 'FLOAT_TYPE', 'CHAR_TYPE', 
           'IF', 'ELSE', 'WHILE',
           'OR', 'AND', 'EQ', 'DIF',
           'G', 'GE','L','LE',
-          'ADD','SUB','MUL','DIV','MOD','EXC']
+          'ADD','SUB','MUL','DIV','MOD','EXC',
+          'TRUE','FALSE']
+
 t_OR=r'\|\|'
 t_AND=r'\&\&'
 t_EQ=r'\=\='
@@ -37,14 +41,24 @@ t_EXC = '!'
 t_ignore = ' \t'
 literals = '(){},;='
 
-def t_ID(t):
-    r'[a-zA-Z_][a-zA-Z_0-9]*'
-    t.type = reserved_words.get(t.value, 'ID')
+def t_FLOATLIT(t):
+    r'\d+\.\d+'
+    t.value = float(t.value)
     return t
 
 def t_INTLIT(t):
     r'[0-9]+'
     t.value = int(t.value)
+    return t
+
+def t_ID(t):
+    r'[a-zA-Z_][a-zA-Z_0-9]*'
+    t.type = reserved_words.get(t.value, 'ID')
+    return t
+
+def t_CHARLIT(t):
+    r"'[^'\\]'"
+    t.value = t.value[1]
     return t
 
 def t_newline(t):
@@ -57,7 +71,7 @@ def t_error(t):
 
 def p_Program(p):
     """
-    Program : Type ID '(' ')' '{' Declarations Statements '}'
+    Program : Type Identifier '(' ')' '{' Declarations Statements '}'
     """
     p[0] = Program(p[6], p[7])
 
@@ -73,9 +87,9 @@ def p_Declarations(p):
 
 def p_Declaration(p):
     """
-    Declaration : Type ID ';'
+    Declaration : Type Identifier ';'
     """
-    p[0] = Declaration(p[2], p[1])
+    p[0] = Declaration(p[2].name, p[1])
 
 def p_Type(p):
     """
@@ -113,9 +127,9 @@ def p_Statement(p):
 
 def p_Assignment(p):
     """
-    Assignment : ID '=' Expression ';'
+    Assignment : Identifier '=' Expression ';'
     """
-    p[0] = Assignment(p[1], p[3])
+    p[0] = Assignment(p[1].name, p[3])
 
 def p_Expression(p):
     """
@@ -139,8 +153,8 @@ def p_Conjunction(p):
 
 def p_Equality(p):
     """
-    Equality : Relation
-             | Relation EquOp Relation
+    Equality : Relation EquOp Relation
+            | Relation
     """
     if len(p) == 2:
         p[0] = p[1]
@@ -243,20 +257,54 @@ def p_UnaryOp(p):
 
 def p_Primary(p):
     """
-    Primary : ID
-            | INTLIT
+    Primary : Identifier
+            | Literal
             | '(' Expression ')'
-            | Type '(' Expression ')'
     """
     if len(p) == 2:
-        if isinstance(p[1], int):
-            p[0] = Literal(p[1], 'INT')
-        else:
-            p[0] = Variable(p[1], 'ID')
-    elif len(p) == 4:
-        p[0] = p[2]
+        p[0] = p[1]
     else:
-        p[0] = p[3]
+        p[0] = p[2]
+
+def p_Identifier(p):
+    """
+    Identifier : ID
+    """
+    p[0] = Variable(p[1], 'ID')
+
+def p_Literal(p):
+    """
+    Literal : Integer
+            | Float
+            | Boolean
+            | Char
+    """
+    p[0] = p[1]
+
+def p_Integer(p):
+    """
+    Integer : INTLIT
+    """
+    p[0] = Literal(p[1], 'INT')
+
+def p_Boolean(p):
+    """
+    Boolean : TRUE
+            | FALSE
+    """
+    p[0] = Literal(p[1] == 'true', 'BOOL')
+
+def p_Float(p):
+    """
+    Float : FLOATLIT
+    """
+    p[0] = Literal(p[1], 'FLOAT')
+
+def p_Char(p):
+    """
+    Char : CHARLIT
+    """
+    p[0] = Literal(p[1], 'CHAR')
 
 def p_error(p):
     print("Syntax error in input!", p)
@@ -282,7 +330,14 @@ class IRGenerator(Visitor):
         self.symbol_table = {}
 
     def visit_literal(self, node: Literal) -> None:
-        self.stack.append(ir.Constant(intType, node.value))
+        type_map = {
+            'INT':   ir.IntType(32),
+            'FLOAT': ir.FloatType(),
+            'BOOL':  ir.IntType(1),
+            'CHAR':  ir.IntType(8),
+        }
+        llvm_type = type_map.get(node.type, ir.IntType(32))
+        self.stack.append(ir.Constant(llvm_type, node.value))
 
     def visit_program(self, node: Program) -> None:
         node.decls.accept(self)
@@ -341,6 +396,7 @@ class IRGenerator(Visitor):
         node.rhs.accept(self)
         rhs = self.stack.pop()
         lhs = self.stack.pop()
+        
         if node.op == '+':
             self.stack.append(builder.add(lhs, rhs))
         elif node.op == '-':
@@ -415,8 +471,8 @@ class IRGenerator(Visitor):
             builder.branch(merge_block)
 
             builder.position_at_end(else_block)
-            for stmt in node.else_stmt:
-                stmt.accept(self)
+            
+            node.else_stmt.accept(self)
             builder.branch(merge_block)
 
             builder.position_at_end(merge_block)
@@ -426,40 +482,58 @@ int main()
 {
     int a;
     int b;
-    int c;
-    int d;
+    float c;
+    bool d;
+    char e;
 
     a = 10;
-    b = 5;
-    c = 2;
-    d = 0;
 
-    d = a + b * c;
-    d = (a - b) / c;
-    d = a % c;
+    b = 20;
 
-    if (a > b)
+    c = 3.14;
+
+    d = true;
+
+    e = 'z';
+
+    a = 10 + 5;
+
+    b = 20 - 3;
+
+    a = 2 * 5;
+
+    b = 20 / 4;
+
+    a = 17 % 3;
+
+    a = 10 + 5 * 2;
+
+    b = (10 + 5) * 2;
+
+    if (a)
+        b = 1;
+
+    if (a)
+        b = 1;
+    else
+        b = 2;
+
+    if (a)
     {
-        d = 1;
+        a = a + 1;
+        b = b - 1;
     }
-
-    if (a >= b && b != c)
-    {
-        d = d + 1;
-    }
-
-    if (a < b || c == 2)
-    {
-        d = d + 2;
-    }
-
-    while (a > 0)
+    else
     {
         a = a - 1;
-        d = d + 1;
+        b = b + 1;
     }
 
-    d = -a;
+    while (a)
+    {
+        b = b + 1;
+        a = a - 1;
+    }
 }
 """
 

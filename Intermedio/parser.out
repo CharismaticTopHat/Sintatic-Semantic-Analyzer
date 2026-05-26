@@ -1,12 +1,16 @@
 Created by PLY version 3.11 (http://www.dabeaz.com/ply)
 
+Unused terminals:
+
+    CHARLITINT_TYPE
+
 Grammar
 
 Rule 0     S' -> Program
-Rule 1     Program -> Type ID ( ) { Declarations Statements }
+Rule 1     Program -> Type Identifier ( ) { Declarations Statements }
 Rule 2     Declarations -> Declarations Declaration
 Rule 3     Declarations -> Declaration
-Rule 4     Declaration -> Type ID ;
+Rule 4     Declaration -> Type Identifier ;
 Rule 5     Type -> INT_TYPE
 Rule 6     Type -> BOOL_TYPE
 Rule 7     Type -> FLOAT_TYPE
@@ -18,107 +22,123 @@ Rule 12    Statement -> Block
 Rule 13    Statement -> Assignment
 Rule 14    Statement -> IfStatement
 Rule 15    Statement -> WhileStatement
-Rule 16    Assignment -> ID = Expression ;
+Rule 16    Assignment -> Identifier = Expression ;
 Rule 17    Expression -> Expression OR Conjunction
 Rule 18    Expression -> Conjunction
 Rule 19    Conjunction -> Conjunction AND Equality
 Rule 20    Conjunction -> Equality
-Rule 21    Equality -> Relation
-Rule 22    Equality -> Relation EquOp Relation
-Rule 23    EquOp -> EQ
-Rule 24    EquOp -> DIF
-Rule 25    Relation -> Addition
-Rule 26    Relation -> Addition RelOp Addition
-Rule 27    RelOp -> G
-Rule 28    RelOp -> GE
-Rule 29    RelOp -> L
-Rule 30    RelOp -> LE
-Rule 31    Addition -> Addition AddOp Term
-Rule 32    Addition -> Term
-Rule 33    AddOp -> ADD
-Rule 34    AddOp -> SUB
-Rule 35    IfStatement -> IF ( Expression ) Statement
-Rule 36    IfStatement -> IF ( Expression ) Statement ELSE Statement
-Rule 37    WhileStatement -> WHILE ( Expression ) Statement
-Rule 38    Term -> Term MulOp Factor
-Rule 39    Term -> Factor
-Rule 40    MulOp -> MUL
-Rule 41    MulOp -> DIV
-Rule 42    MulOp -> MOD
-Rule 43    Factor -> UnaryOp Primary
-Rule 44    Factor -> Primary
-Rule 45    UnaryOp -> SUB
-Rule 46    UnaryOp -> EXC
-Rule 47    Primary -> ID
-Rule 48    Primary -> INTLIT
-Rule 49    Primary -> ( Expression )
-Rule 50    Primary -> Type ( Expression )
+Rule 21    Equality -> Relation EQ Relation
+Rule 22    Equality -> Relation DIF Relation
+Rule 23    Equality -> Relation
+Rule 24    EquOp -> EQ
+Rule 25    EquOp -> DIF
+Rule 26    Relation -> Addition
+Rule 27    Relation -> Addition RelOp Addition
+Rule 28    RelOp -> G
+Rule 29    RelOp -> GE
+Rule 30    RelOp -> L
+Rule 31    RelOp -> LE
+Rule 32    Addition -> Addition AddOp Term
+Rule 33    Addition -> Term
+Rule 34    AddOp -> ADD
+Rule 35    AddOp -> SUB
+Rule 36    IfStatement -> IF ( Expression ) Statement
+Rule 37    IfStatement -> IF ( Expression ) Statement ELSE Statement
+Rule 38    WhileStatement -> WHILE ( Expression ) Statement
+Rule 39    Term -> Term MulOp Factor
+Rule 40    Term -> Factor
+Rule 41    MulOp -> MUL
+Rule 42    MulOp -> DIV
+Rule 43    MulOp -> MOD
+Rule 44    Factor -> UnaryOp Primary
+Rule 45    Factor -> Primary
+Rule 46    UnaryOp -> SUB
+Rule 47    UnaryOp -> EXC
+Rule 48    Primary -> Identifier
+Rule 49    Primary -> Literal
+Rule 50    Primary -> ( Expression )
+Rule 51    Identifier -> ID
+Rule 52    Literal -> Integer
+Rule 53    Literal -> Float
+Rule 54    Literal -> Boolean
+Rule 55    Literal -> Char
+Rule 56    Integer -> INTLIT
+Rule 57    Boolean -> TRUE
+Rule 58    Boolean -> FALSE
+Rule 59    Float -> FLOATLIT
+Rule 60    Char -> CHARLIT
 
 Terminals, with rules where they appear
 
-(                    : 1 35 36 37 49 50
-)                    : 1 35 36 37 49 50
+(                    : 1 36 37 38 50
+)                    : 1 36 37 38 50
 ;                    : 4 16
 =                    : 16
-ADD                  : 33
+ADD                  : 34
 AND                  : 19
 BOOL_TYPE            : 6
+CHARLIT              : 60
+CHARLITINT_TYPE      : 
 CHAR_TYPE            : 8
-DIF                  : 24
-DIV                  : 41
-ELSE                 : 36
-EQ                   : 23
-EXC                  : 46
+DIF                  : 22 25
+DIV                  : 42
+ELSE                 : 37
+EQ                   : 21 24
+EXC                  : 47
+FALSE                : 58
+FLOATLIT             : 59
 FLOAT_TYPE           : 7
-G                    : 27
-GE                   : 28
-ID                   : 1 4 16 47
-IF                   : 35 36
-INTLIT               : 48
-INT_TYPE             : 5
-L                    : 29
-LE                   : 30
-MOD                  : 42
-MUL                  : 40
+G                    : 28
+GE                   : 29
+ID                   : 51
+IF                   : 36 37
+INTLIT               : 56
+L                    : 30
+LE                   : 31
+MOD                  : 43
+MUL                  : 41
 OR                   : 17
-SUB                  : 34 45
-WHILE                : 37
+SUB                  : 35 46
+TRUE                 : 57
+WHILE                : 38
 error                : 
 {                    : 1 9
 }                    : 1 9
 
 Nonterminals, with rules where they appear
 
-AddOp                : 31
-Addition             : 25 26 26 31
+AddOp                : 32
+Addition             : 26 27 27 32
 Assignment           : 13
 Block                : 12
+Boolean              : 54
+Char                 : 55
 Conjunction          : 17 18 19
 Declaration          : 2 3
 Declarations         : 1 2
-EquOp                : 22
+EquOp                : 
 Equality             : 19 20
-Expression           : 16 17 35 36 37 49 50
-Factor               : 38 39
+Expression           : 16 17 36 37 38 50
+Factor               : 39 40
+Float                : 53
+INT_TYPE             : 5
+Identifier           : 1 4 16 48
 IfStatement          : 14
-MulOp                : 38
-Primary              : 43 44
+Integer              : 52
+Literal              : 49
+MulOp                : 39
+Primary              : 44 45
 Program              : 0
-RelOp                : 26
-Relation             : 21 22 22
-Statement            : 10 11 35 36 36 37
+RelOp                : 27
+Relation             : 21 21 22 22 23
+Statement            : 10 11 36 37 37 38
 Statements           : 1 9 10
-Term                 : 31 32 38
-Type                 : 1 4 50
-UnaryOp              : 43
+Term                 : 32 33 39
+Type                 : 1 4
+UnaryOp              : 44
 WhileStatement       : 15
 
-Parsing method: LALR
-
-state 0
-
-    (0) S' -> . Program
-    (1) Program -> . Type ID ( ) { Declarations Statements }
+ments }
     (5) Type -> . INT_TYPE
     (6) Type -> . BOOL_TYPE
     (7) Type -> . FLOAT_TYPE
@@ -140,17 +160,18 @@ state 1
 
 state 2
 
-    (1) Program -> Type . ID ( ) { Declarations Statements }
+    (1) Program -> Type . Identifier ( ) { Declarations Statements }
+    (50) Identifier -> . ID
 
-    ID              shift and go to state 7
+    ID              shift and go to state 8
 
+    Identifier                     shift and go to state 7
 
 state 3
 
     (5) Type -> INT_TYPE .
 
     ID              reduce using rule 5 (Type -> INT_TYPE .)
-    (               reduce using rule 5 (Type -> INT_TYPE .)
 
 
 state 4
@@ -158,7 +179,6 @@ state 4
     (6) Type -> BOOL_TYPE .
 
     ID              reduce using rule 6 (Type -> BOOL_TYPE .)
-    (               reduce using rule 6 (Type -> BOOL_TYPE .)
 
 
 state 5
@@ -166,7 +186,6 @@ state 5
     (7) Type -> FLOAT_TYPE .
 
     ID              reduce using rule 7 (Type -> FLOAT_TYPE .)
-    (               reduce using rule 7 (Type -> FLOAT_TYPE .)
 
 
 state 6
@@ -174,36 +193,58 @@ state 6
     (8) Type -> CHAR_TYPE .
 
     ID              reduce using rule 8 (Type -> CHAR_TYPE .)
-    (               reduce using rule 8 (Type -> CHAR_TYPE .)
 
 
 state 7
 
-    (1) Program -> Type ID . ( ) { Declarations Statements }
+    (1) Program -> Type Identifier . ( ) { Declarations Statements }
 
-    (               shift and go to state 8
+    (               shift and go to state 9
 
 
 state 8
 
-    (1) Program -> Type ID ( . ) { Declarations Statements }
+    (50) Identifier -> ID .
 
-    )               shift and go to state 9
+    (               reduce using rule 50 (Identifier -> ID .)
+    ;               reduce using rule 50 (Identifier -> ID .)
+    =               reduce using rule 50 (Identifier -> ID .)
+    MUL             reduce using rule 50 (Identifier -> ID .)
+    DIV             reduce using rule 50 (Identifier -> ID .)
+    MOD             reduce using rule 50 (Identifier -> ID .)
+    G               reduce using rule 50 (Identifier -> ID .)
+    GE              reduce using rule 50 (Identifier -> ID .)
+    L               reduce using rule 50 (Identifier -> ID .)
+    LE              reduce using rule 50 (Identifier -> ID .)
+    ADD             reduce using rule 50 (Identifier -> ID .)
+    SUB             reduce using rule 50 (Identifier -> ID .)
+    EQ              reduce using rule 50 (Identifier -> ID .)
+    DIF             reduce using rule 50 (Identifier -> ID .)
+    AND             reduce using rule 50 (Identifier -> ID .)
+    OR              reduce using rule 50 (Identifier -> ID .)
+    )               reduce using rule 50 (Identifier -> ID .)
 
 
 state 9
 
-    (1) Program -> Type ID ( ) . { Declarations Statements }
+    (1) Program -> Type Identifier ( . ) { Declarations Statements }
 
-    {               shift and go to state 10
+    )               shift and go to state 10
 
 
 state 10
 
-    (1) Program -> Type ID ( ) { . Declarations Statements }
+    (1) Program -> Type Identifier ( ) . { Declarations Statements }
+
+    {               shift and go to state 11
+
+
+state 11
+
+    (1) Program -> Type Identifier ( ) { . Declarations Statements }
     (2) Declarations -> . Declarations Declaration
     (3) Declarations -> . Declaration
-    (4) Declaration -> . Type ID ;
+    (4) Declaration -> . Type Identifier ;
     (5) Type -> . INT_TYPE
     (6) Type -> . BOOL_TYPE
     (7) Type -> . FLOAT_TYPE
@@ -214,24 +255,26 @@ state 10
     FLOAT_TYPE      shift and go to state 5
     CHAR_TYPE       shift and go to state 6
 
-    Type                           shift and go to state 11
-    Declarations                   shift and go to state 12
-    Declaration                    shift and go to state 13
-
-state 11
-
-    (4) Declaration -> Type . ID ;
-
-    ID              shift and go to state 14
-
+    Type                           shift and go to state 12
+    Declarations                   shift and go to state 13
+    Declaration                    shift and go to state 14
 
 state 12
 
-    (1) Program -> Type ID ( ) { Declarations . Statements }
+    (4) Declaration -> Type . Identifier ;
+    (50) Identifier -> . ID
+
+    ID              shift and go to state 8
+
+    Identifier                     shift and go to state 15
+
+state 13
+
+    (1) Program -> Type Identifier ( ) { Declarations . Statements }
     (2) Declarations -> Declarations . Declaration
     (10) Statements -> . Statements Statement
     (11) Statements -> . Statement
-    (4) Declaration -> . Type ID ;
+    (4) Declaration -> . Type Identifier ;
     (12) Statement -> . Block
     (13) Statement -> . Assignment
     (14) Statement -> . IfStatement
@@ -241,30 +284,32 @@ state 12
     (7) Type -> . FLOAT_TYPE
     (8) Type -> . CHAR_TYPE
     (9) Block -> . { Statements }
-    (16) Assignment -> . ID = Expression ;
+    (16) Assignment -> . Identifier = Expression ;
     (35) IfStatement -> . IF ( Expression ) Statement
     (36) IfStatement -> . IF ( Expression ) Statement ELSE Statement
     (37) WhileStatement -> . WHILE ( Expression ) Statement
+    (50) Identifier -> . ID
 
     INT_TYPE        shift and go to state 3
     BOOL_TYPE       shift and go to state 4
     FLOAT_TYPE      shift and go to state 5
     CHAR_TYPE       shift and go to state 6
-    {               shift and go to state 16
-    ID              shift and go to state 15
-    IF              shift and go to state 24
-    WHILE           shift and go to state 25
+    {               shift and go to state 17
+    IF              shift and go to state 25
+    WHILE           shift and go to state 26
+    ID              shift and go to state 8
 
-    Type                           shift and go to state 11
-    Statements                     shift and go to state 17
-    Declaration                    shift and go to state 18
-    Statement                      shift and go to state 19
-    Block                          shift and go to state 20
-    Assignment                     shift and go to state 21
-    IfStatement                    shift and go to state 22
-    WhileStatement                 shift and go to state 23
+    Type                           shift and go to state 12
+    Identifier                     shift and go to state 16
+    Statements                     shift and go to state 18
+    Declaration                    shift and go to state 19
+    Statement                      shift and go to state 20
+    Block                          shift and go to state 21
+    Assignment                     shift and go to state 22
+    IfStatement                    shift and go to state 23
+    WhileStatement                 shift and go to state 24
 
-state 13
+state 14
 
     (3) Declarations -> Declaration .
 
@@ -273,26 +318,26 @@ state 13
     FLOAT_TYPE      reduce using rule 3 (Declarations -> Declaration .)
     CHAR_TYPE       reduce using rule 3 (Declarations -> Declaration .)
     {               reduce using rule 3 (Declarations -> Declaration .)
-    ID              reduce using rule 3 (Declarations -> Declaration .)
     IF              reduce using rule 3 (Declarations -> Declaration .)
     WHILE           reduce using rule 3 (Declarations -> Declaration .)
-
-
-state 14
-
-    (4) Declaration -> Type ID . ;
-
-    ;               shift and go to state 26
+    ID              reduce using rule 3 (Declarations -> Declaration .)
 
 
 state 15
 
-    (16) Assignment -> ID . = Expression ;
+    (4) Declaration -> Type Identifier . ;
 
-    =               shift and go to state 27
+    ;               shift and go to state 27
 
 
 state 16
+
+    (16) Assignment -> Identifier . = Expression ;
+
+    =               shift and go to state 28
+
+
+state 17
 
     (9) Block -> { . Statements }
     (10) Statements -> . Statements Statement
@@ -302,50 +347,54 @@ state 16
     (14) Statement -> . IfStatement
     (15) Statement -> . WhileStatement
     (9) Block -> . { Statements }
-    (16) Assignment -> . ID = Expression ;
+    (16) Assignment -> . Identifier = Expression ;
     (35) IfStatement -> . IF ( Expression ) Statement
     (36) IfStatement -> . IF ( Expression ) Statement ELSE Statement
     (37) WhileStatement -> . WHILE ( Expression ) Statement
+    (50) Identifier -> . ID
 
-    {               shift and go to state 16
-    ID              shift and go to state 15
-    IF              shift and go to state 24
-    WHILE           shift and go to state 25
+    {               shift and go to state 17
+    IF              shift and go to state 25
+    WHILE           shift and go to state 26
+    ID              shift and go to state 8
 
-    Statements                     shift and go to state 28
-    Statement                      shift and go to state 19
-    Block                          shift and go to state 20
-    Assignment                     shift and go to state 21
-    IfStatement                    shift and go to state 22
-    WhileStatement                 shift and go to state 23
+    Statements                     shift and go to state 29
+    Statement                      shift and go to state 20
+    Block                          shift and go to state 21
+    Assignment                     shift and go to state 22
+    IfStatement                    shift and go to state 23
+    WhileStatement                 shift and go to state 24
+    Identifier                     shift and go to state 16
 
-state 17
+state 18
 
-    (1) Program -> Type ID ( ) { Declarations Statements . }
+    (1) Program -> Type Identifier ( ) { Declarations Statements . }
     (10) Statements -> Statements . Statement
     (12) Statement -> . Block
     (13) Statement -> . Assignment
     (14) Statement -> . IfStatement
     (15) Statement -> . WhileStatement
     (9) Block -> . { Statements }
-    (16) Assignment -> . ID = Expression ;
+    (16) Assignment -> . Identifier = Expression ;
     (35) IfStatement -> . IF ( Expression ) Statement
     (36) IfStatement -> . IF ( Expression ) Statement ELSE Statement
     (37) WhileStatement -> . WHILE ( Expression ) Statement
+    (50) Identifier -> . ID
 
-    }               shift and go to state 29
-    {               shift and go to state 16
-    ID              shift and go to state 15
-    IF              shift and go to state 24
-    WHILE           shift and go to state 25
+    }               shift and go to state 30
+    {               shift and go to state 17
+    IF              shift and go to state 25
+    WHILE           shift and go to state 26
+    ID              shift and go to state 8
 
-    Statement                      shift and go to state 30
-    Block                          shift and go to state 20
-    Assignment                     shift and go to state 21
-    IfStatement                    shift and go to state 22
-    WhileStatement                 shift and go to state 23
+    Identifier                     shift and go to state 16
+    Statement                      shift and go to state 31
+    Block                          shift and go to state 21
+    Assignment                     shift and go to state 22
+    IfStatement                    shift and go to state 23
+    WhileStatement                 shift and go to state 24
 
-state 18
+state 19
 
     (2) Declarations -> Declarations Declaration .
 
@@ -354,108 +403,108 @@ state 18
     FLOAT_TYPE      reduce using rule 2 (Declarations -> Declarations Declaration .)
     CHAR_TYPE       reduce using rule 2 (Declarations -> Declarations Declaration .)
     {               reduce using rule 2 (Declarations -> Declarations Declaration .)
-    ID              reduce using rule 2 (Declarations -> Declarations Declaration .)
     IF              reduce using rule 2 (Declarations -> Declarations Declaration .)
     WHILE           reduce using rule 2 (Declarations -> Declarations Declaration .)
+    ID              reduce using rule 2 (Declarations -> Declarations Declaration .)
 
 
-state 19
+state 20
 
     (11) Statements -> Statement .
 
     }               reduce using rule 11 (Statements -> Statement .)
     {               reduce using rule 11 (Statements -> Statement .)
-    ID              reduce using rule 11 (Statements -> Statement .)
     IF              reduce using rule 11 (Statements -> Statement .)
     WHILE           reduce using rule 11 (Statements -> Statement .)
+    ID              reduce using rule 11 (Statements -> Statement .)
 
 
-state 20
+state 21
 
     (12) Statement -> Block .
 
     }               reduce using rule 12 (Statement -> Block .)
     {               reduce using rule 12 (Statement -> Block .)
-    ID              reduce using rule 12 (Statement -> Block .)
     IF              reduce using rule 12 (Statement -> Block .)
     WHILE           reduce using rule 12 (Statement -> Block .)
+    ID              reduce using rule 12 (Statement -> Block .)
     ELSE            reduce using rule 12 (Statement -> Block .)
 
 
-state 21
+state 22
 
     (13) Statement -> Assignment .
 
     }               reduce using rule 13 (Statement -> Assignment .)
     {               reduce using rule 13 (Statement -> Assignment .)
-    ID              reduce using rule 13 (Statement -> Assignment .)
     IF              reduce using rule 13 (Statement -> Assignment .)
     WHILE           reduce using rule 13 (Statement -> Assignment .)
+    ID              reduce using rule 13 (Statement -> Assignment .)
     ELSE            reduce using rule 13 (Statement -> Assignment .)
 
 
-state 22
+state 23
 
     (14) Statement -> IfStatement .
 
     }               reduce using rule 14 (Statement -> IfStatement .)
     {               reduce using rule 14 (Statement -> IfStatement .)
-    ID              reduce using rule 14 (Statement -> IfStatement .)
     IF              reduce using rule 14 (Statement -> IfStatement .)
     WHILE           reduce using rule 14 (Statement -> IfStatement .)
+    ID              reduce using rule 14 (Statement -> IfStatement .)
     ELSE            reduce using rule 14 (Statement -> IfStatement .)
 
 
-state 23
+state 24
 
     (15) Statement -> WhileStatement .
 
     }               reduce using rule 15 (Statement -> WhileStatement .)
     {               reduce using rule 15 (Statement -> WhileStatement .)
-    ID              reduce using rule 15 (Statement -> WhileStatement .)
     IF              reduce using rule 15 (Statement -> WhileStatement .)
     WHILE           reduce using rule 15 (Statement -> WhileStatement .)
+    ID              reduce using rule 15 (Statement -> WhileStatement .)
     ELSE            reduce using rule 15 (Statement -> WhileStatement .)
-
-
-state 24
-
-    (35) IfStatement -> IF . ( Expression ) Statement
-    (36) IfStatement -> IF . ( Expression ) Statement ELSE Statement
-
-    (               shift and go to state 31
 
 
 state 25
 
-    (37) WhileStatement -> WHILE . ( Expression ) Statement
+    (35) IfStatement -> IF . ( Expression ) Statement
+    (36) IfStatement -> IF . ( Expression ) Statement ELSE Statement
 
     (               shift and go to state 32
 
 
 state 26
 
-    (4) Declaration -> Type ID ; .
+    (37) WhileStatement -> WHILE . ( Expression ) Statement
 
-    INT_TYPE        reduce using rule 4 (Declaration -> Type ID ; .)
-    BOOL_TYPE       reduce using rule 4 (Declaration -> Type ID ; .)
-    FLOAT_TYPE      reduce using rule 4 (Declaration -> Type ID ; .)
-    CHAR_TYPE       reduce using rule 4 (Declaration -> Type ID ; .)
-    {               reduce using rule 4 (Declaration -> Type ID ; .)
-    ID              reduce using rule 4 (Declaration -> Type ID ; .)
-    IF              reduce using rule 4 (Declaration -> Type ID ; .)
-    WHILE           reduce using rule 4 (Declaration -> Type ID ; .)
+    (               shift and go to state 33
 
 
 state 27
 
-    (16) Assignment -> ID = . Expression ;
+    (4) Declaration -> Type Identifier ; .
+
+    INT_TYPE        reduce using rule 4 (Declaration -> Type Identifier ; .)
+    BOOL_TYPE       reduce using rule 4 (Declaration -> Type Identifier ; .)
+    FLOAT_TYPE      reduce using rule 4 (Declaration -> Type Identifier ; .)
+    CHAR_TYPE       reduce using rule 4 (Declaration -> Type Identifier ; .)
+    {               reduce using rule 4 (Declaration -> Type Identifier ; .)
+    IF              reduce using rule 4 (Declaration -> Type Identifier ; .)
+    WHILE           reduce using rule 4 (Declaration -> Type Identifier ; .)
+    ID              reduce using rule 4 (Declaration -> Type Identifier ; .)
+
+
+state 28
+
+    (16) Assignment -> Identifier = . Expression ;
     (17) Expression -> . Expression OR Conjunction
     (18) Expression -> . Conjunction
     (19) Conjunction -> . Conjunction AND Equality
     (20) Conjunction -> . Equality
-    (21) Equality -> . Relation
-    (22) Equality -> . Relation EquOp Relation
+    (21) Equality -> . Relation EquOp Relation
+    (22) Equality -> . Relation
     (25) Relation -> . Addition
     (26) Relation -> . Addition RelOp Addition
     (31) Addition -> . Addition AddOp Term
@@ -466,37 +515,47 @@ state 27
     (44) Factor -> . Primary
     (45) UnaryOp -> . SUB
     (46) UnaryOp -> . EXC
-    (47) Primary -> . ID
-    (48) Primary -> . INTLIT
+    (47) Primary -> . Identifier
+    (48) Primary -> . Literal
     (49) Primary -> . ( Expression )
-    (50) Primary -> . Type ( Expression )
-    (5) Type -> . INT_TYPE
-    (6) Type -> . BOOL_TYPE
-    (7) Type -> . FLOAT_TYPE
-    (8) Type -> . CHAR_TYPE
+    (50) Identifier -> . ID
+    (51) Literal -> . Integer
+    (52) Literal -> . Float
+    (53) Literal -> . Boolean
+    (54) Literal -> . Char
+    (55) Integer -> . INTLIT
+    (58) Float -> . FLOATLIT
+    (56) Boolean -> . TRUE
+    (57) Boolean -> . FALSE
+    (59) Char -> . CHARLIT
 
-    SUB             shift and go to state 43
-    EXC             shift and go to state 44
-    ID              shift and go to state 33
-    INTLIT          shift and go to state 45
-    (               shift and go to state 46
-    INT_TYPE        shift and go to state 3
-    BOOL_TYPE       shift and go to state 4
-    FLOAT_TYPE      shift and go to state 5
-    CHAR_TYPE       shift and go to state 6
+    SUB             shift and go to state 44
+    EXC             shift and go to state 45
+    (               shift and go to state 47
+    ID              shift and go to state 8
+    INTLIT          shift and go to state 52
+    FLOATLIT        shift and go to state 53
+    TRUE            shift and go to state 54
+    FALSE           shift and go to state 55
+    CHARLIT         shift and go to state 56
 
-    Expression                     shift and go to state 34
-    Conjunction                    shift and go to state 35
-    Equality                       shift and go to state 36
-    Relation                       shift and go to state 37
-    Addition                       shift and go to state 38
-    Term                           shift and go to state 39
-    Factor                         shift and go to state 40
-    UnaryOp                        shift and go to state 41
-    Primary                        shift and go to state 42
-    Type                           shift and go to state 47
+    Identifier                     shift and go to state 34
+    Expression                     shift and go to state 35
+    Conjunction                    shift and go to state 36
+    Equality                       shift and go to state 37
+    Relation                       shift and go to state 38
+    Addition                       shift and go to state 39
+    Term                           shift and go to state 40
+    Factor                         shift and go to state 41
+    UnaryOp                        shift and go to state 42
+    Primary                        shift and go to state 43
+    Literal                        shift and go to state 46
+    Integer                        shift and go to state 48
+    Float                          shift and go to state 49
+    Boolean                        shift and go to state 50
+    Char                           shift and go to state 51
 
-state 28
+state 29
 
     (9) Block -> { Statements . }
     (10) Statements -> Statements . Statement
@@ -505,42 +564,44 @@ state 28
     (14) Statement -> . IfStatement
     (15) Statement -> . WhileStatement
     (9) Block -> . { Statements }
-    (16) Assignment -> . ID = Expression ;
+    (16) Assignment -> . Identifier = Expression ;
     (35) IfStatement -> . IF ( Expression ) Statement
     (36) IfStatement -> . IF ( Expression ) Statement ELSE Statement
     (37) WhileStatement -> . WHILE ( Expression ) Statement
+    (50) Identifier -> . ID
 
-    }               shift and go to state 48
-    {               shift and go to state 16
-    ID              shift and go to state 15
-    IF              shift and go to state 24
-    WHILE           shift and go to state 25
+    }               shift and go to state 57
+    {               shift and go to state 17
+    IF              shift and go to state 25
+    WHILE           shift and go to state 26
+    ID              shift and go to state 8
 
-    Statement                      shift and go to state 30
-    Block                          shift and go to state 20
-    Assignment                     shift and go to state 21
-    IfStatement                    shift and go to state 22
-    WhileStatement                 shift and go to state 23
-
-state 29
-
-    (1) Program -> Type ID ( ) { Declarations Statements } .
-
-    $end            reduce using rule 1 (Program -> Type ID ( ) { Declarations Statements } .)
-
+    Statement                      shift and go to state 31
+    Block                          shift and go to state 21
+    Assignment                     shift and go to state 22
+    IfStatement                    shift and go to state 23
+    WhileStatement                 shift and go to state 24
+    Identifier                     shift and go to state 16
 
 state 30
+
+    (1) Program -> Type Identifier ( ) { Declarations Statements } .
+
+    $end            reduce using rule 1 (Program -> Type Identifier ( ) { Declarations Statements } .)
+
+
+state 31
 
     (10) Statements -> Statements Statement .
 
     }               reduce using rule 10 (Statements -> Statements Statement .)
     {               reduce using rule 10 (Statements -> Statements Statement .)
-    ID              reduce using rule 10 (Statements -> Statements Statement .)
     IF              reduce using rule 10 (Statements -> Statements Statement .)
     WHILE           reduce using rule 10 (Statements -> Statements Statement .)
+    ID              reduce using rule 10 (Statements -> Statements Statement .)
 
 
-state 31
+state 32
 
     (35) IfStatement -> IF ( . Expression ) Statement
     (36) IfStatement -> IF ( . Expression ) Statement ELSE Statement
@@ -548,8 +609,8 @@ state 31
     (18) Expression -> . Conjunction
     (19) Conjunction -> . Conjunction AND Equality
     (20) Conjunction -> . Equality
-    (21) Equality -> . Relation
-    (22) Equality -> . Relation EquOp Relation
+    (21) Equality -> . Relation EquOp Relation
+    (22) Equality -> . Relation
     (25) Relation -> . Addition
     (26) Relation -> . Addition RelOp Addition
     (31) Addition -> . Addition AddOp Term
@@ -560,45 +621,55 @@ state 31
     (44) Factor -> . Primary
     (45) UnaryOp -> . SUB
     (46) UnaryOp -> . EXC
-    (47) Primary -> . ID
-    (48) Primary -> . INTLIT
+    (47) Primary -> . Identifier
+    (48) Primary -> . Literal
     (49) Primary -> . ( Expression )
-    (50) Primary -> . Type ( Expression )
-    (5) Type -> . INT_TYPE
-    (6) Type -> . BOOL_TYPE
-    (7) Type -> . FLOAT_TYPE
-    (8) Type -> . CHAR_TYPE
+    (50) Identifier -> . ID
+    (51) Literal -> . Integer
+    (52) Literal -> . Float
+    (53) Literal -> . Boolean
+    (54) Literal -> . Char
+    (55) Integer -> . INTLIT
+    (58) Float -> . FLOATLIT
+    (56) Boolean -> . TRUE
+    (57) Boolean -> . FALSE
+    (59) Char -> . CHARLIT
 
-    SUB             shift and go to state 43
-    EXC             shift and go to state 44
-    ID              shift and go to state 33
-    INTLIT          shift and go to state 45
-    (               shift and go to state 46
-    INT_TYPE        shift and go to state 3
-    BOOL_TYPE       shift and go to state 4
-    FLOAT_TYPE      shift and go to state 5
-    CHAR_TYPE       shift and go to state 6
+    SUB             shift and go to state 44
+    EXC             shift and go to state 45
+    (               shift and go to state 47
+    ID              shift and go to state 8
+    INTLIT          shift and go to state 52
+    FLOATLIT        shift and go to state 53
+    TRUE            shift and go to state 54
+    FALSE           shift and go to state 55
+    CHARLIT         shift and go to state 56
 
-    Expression                     shift and go to state 49
-    Conjunction                    shift and go to state 35
-    Equality                       shift and go to state 36
-    Relation                       shift and go to state 37
-    Addition                       shift and go to state 38
-    Term                           shift and go to state 39
-    Factor                         shift and go to state 40
-    UnaryOp                        shift and go to state 41
-    Primary                        shift and go to state 42
-    Type                           shift and go to state 47
+    Expression                     shift and go to state 58
+    Conjunction                    shift and go to state 36
+    Equality                       shift and go to state 37
+    Relation                       shift and go to state 38
+    Addition                       shift and go to state 39
+    Term                           shift and go to state 40
+    Factor                         shift and go to state 41
+    UnaryOp                        shift and go to state 42
+    Primary                        shift and go to state 43
+    Identifier                     shift and go to state 34
+    Literal                        shift and go to state 46
+    Integer                        shift and go to state 48
+    Float                          shift and go to state 49
+    Boolean                        shift and go to state 50
+    Char                           shift and go to state 51
 
-state 32
+state 33
 
     (37) WhileStatement -> WHILE ( . Expression ) Statement
     (17) Expression -> . Expression OR Conjunction
     (18) Expression -> . Conjunction
     (19) Conjunction -> . Conjunction AND Equality
     (20) Conjunction -> . Equality
-    (21) Equality -> . Relation
-    (22) Equality -> . Relation EquOp Relation
+    (21) Equality -> . Relation EquOp Relation
+    (22) Equality -> . Relation
     (25) Relation -> . Addition
     (26) Relation -> . Addition RelOp Addition
     (31) Addition -> . Addition AddOp Term
@@ -609,67 +680,77 @@ state 32
     (44) Factor -> . Primary
     (45) UnaryOp -> . SUB
     (46) UnaryOp -> . EXC
-    (47) Primary -> . ID
-    (48) Primary -> . INTLIT
+    (47) Primary -> . Identifier
+    (48) Primary -> . Literal
     (49) Primary -> . ( Expression )
-    (50) Primary -> . Type ( Expression )
-    (5) Type -> . INT_TYPE
-    (6) Type -> . BOOL_TYPE
-    (7) Type -> . FLOAT_TYPE
-    (8) Type -> . CHAR_TYPE
+    (50) Identifier -> . ID
+    (51) Literal -> . Integer
+    (52) Literal -> . Float
+    (53) Literal -> . Boolean
+    (54) Literal -> . Char
+    (55) Integer -> . INTLIT
+    (58) Float -> . FLOATLIT
+    (56) Boolean -> . TRUE
+    (57) Boolean -> . FALSE
+    (59) Char -> . CHARLIT
 
-    SUB             shift and go to state 43
-    EXC             shift and go to state 44
-    ID              shift and go to state 33
-    INTLIT          shift and go to state 45
-    (               shift and go to state 46
-    INT_TYPE        shift and go to state 3
-    BOOL_TYPE       shift and go to state 4
-    FLOAT_TYPE      shift and go to state 5
-    CHAR_TYPE       shift and go to state 6
+    SUB             shift and go to state 44
+    EXC             shift and go to state 45
+    (               shift and go to state 47
+    ID              shift and go to state 8
+    INTLIT          shift and go to state 52
+    FLOATLIT        shift and go to state 53
+    TRUE            shift and go to state 54
+    FALSE           shift and go to state 55
+    CHARLIT         shift and go to state 56
 
-    Expression                     shift and go to state 50
-    Conjunction                    shift and go to state 35
-    Equality                       shift and go to state 36
-    Relation                       shift and go to state 37
-    Addition                       shift and go to state 38
-    Term                           shift and go to state 39
-    Factor                         shift and go to state 40
-    UnaryOp                        shift and go to state 41
-    Primary                        shift and go to state 42
-    Type                           shift and go to state 47
-
-state 33
-
-    (47) Primary -> ID .
-
-    MUL             reduce using rule 47 (Primary -> ID .)
-    DIV             reduce using rule 47 (Primary -> ID .)
-    MOD             reduce using rule 47 (Primary -> ID .)
-    G               reduce using rule 47 (Primary -> ID .)
-    GE              reduce using rule 47 (Primary -> ID .)
-    L               reduce using rule 47 (Primary -> ID .)
-    LE              reduce using rule 47 (Primary -> ID .)
-    ADD             reduce using rule 47 (Primary -> ID .)
-    SUB             reduce using rule 47 (Primary -> ID .)
-    EQ              reduce using rule 47 (Primary -> ID .)
-    DIF             reduce using rule 47 (Primary -> ID .)
-    AND             reduce using rule 47 (Primary -> ID .)
-    ;               reduce using rule 47 (Primary -> ID .)
-    OR              reduce using rule 47 (Primary -> ID .)
-    )               reduce using rule 47 (Primary -> ID .)
-
+    Expression                     shift and go to state 59
+    Conjunction                    shift and go to state 36
+    Equality                       shift and go to state 37
+    Relation                       shift and go to state 38
+    Addition                       shift and go to state 39
+    Term                           shift and go to state 40
+    Factor                         shift and go to state 41
+    UnaryOp                        shift and go to state 42
+    Primary                        shift and go to state 43
+    Identifier                     shift and go to state 34
+    Literal                        shift and go to state 46
+    Integer                        shift and go to state 48
+    Float                          shift and go to state 49
+    Boolean                        shift and go to state 50
+    Char                           shift and go to state 51
 
 state 34
 
-    (16) Assignment -> ID = Expression . ;
-    (17) Expression -> Expression . OR Conjunction
+    (47) Primary -> Identifier .
 
-    ;               shift and go to state 51
-    OR              shift and go to state 52
+    MUL             reduce using rule 47 (Primary -> Identifier .)
+    DIV             reduce using rule 47 (Primary -> Identifier .)
+    MOD             reduce using rule 47 (Primary -> Identifier .)
+    G               reduce using rule 47 (Primary -> Identifier .)
+    GE              reduce using rule 47 (Primary -> Identifier .)
+    L               reduce using rule 47 (Primary -> Identifier .)
+    LE              reduce using rule 47 (Primary -> Identifier .)
+    ADD             reduce using rule 47 (Primary -> Identifier .)
+    SUB             reduce using rule 47 (Primary -> Identifier .)
+    EQ              reduce using rule 47 (Primary -> Identifier .)
+    DIF             reduce using rule 47 (Primary -> Identifier .)
+    AND             reduce using rule 47 (Primary -> Identifier .)
+    ;               reduce using rule 47 (Primary -> Identifier .)
+    OR              reduce using rule 47 (Primary -> Identifier .)
+    )               reduce using rule 47 (Primary -> Identifier .)
 
 
 state 35
+
+    (16) Assignment -> Identifier = Expression . ;
+    (17) Expression -> Expression . OR Conjunction
+
+    ;               shift and go to state 60
+    OR              shift and go to state 61
+
+
+state 36
 
     (18) Expression -> Conjunction .
     (19) Conjunction -> Conjunction . AND Equality
@@ -677,10 +758,10 @@ state 35
     ;               reduce using rule 18 (Expression -> Conjunction .)
     OR              reduce using rule 18 (Expression -> Conjunction .)
     )               reduce using rule 18 (Expression -> Conjunction .)
-    AND             shift and go to state 53
+    AND             shift and go to state 62
 
 
-state 36
+state 37
 
     (20) Conjunction -> Equality .
 
@@ -690,23 +771,23 @@ state 36
     )               reduce using rule 20 (Conjunction -> Equality .)
 
 
-state 37
+state 38
 
-    (21) Equality -> Relation .
-    (22) Equality -> Relation . EquOp Relation
+    (21) Equality -> Relation . EquOp Relation
+    (22) Equality -> Relation .
     (23) EquOp -> . EQ
     (24) EquOp -> . DIF
 
-    AND             reduce using rule 21 (Equality -> Relation .)
-    ;               reduce using rule 21 (Equality -> Relation .)
-    OR              reduce using rule 21 (Equality -> Relation .)
-    )               reduce using rule 21 (Equality -> Relation .)
-    EQ              shift and go to state 55
-    DIF             shift and go to state 56
+    AND             reduce using rule 22 (Equality -> Relation .)
+    ;               reduce using rule 22 (Equality -> Relation .)
+    OR              reduce using rule 22 (Equality -> Relation .)
+    )               reduce using rule 22 (Equality -> Relation .)
+    EQ              shift and go to state 64
+    DIF             shift and go to state 65
 
-    EquOp                          shift and go to state 54
+    EquOp                          shift and go to state 63
 
-state 38
+state 39
 
     (25) Relation -> Addition .
     (26) Relation -> Addition . RelOp Addition
@@ -724,17 +805,17 @@ state 38
     ;               reduce using rule 25 (Relation -> Addition .)
     OR              reduce using rule 25 (Relation -> Addition .)
     )               reduce using rule 25 (Relation -> Addition .)
-    G               shift and go to state 59
-    GE              shift and go to state 60
-    L               shift and go to state 61
-    LE              shift and go to state 62
-    ADD             shift and go to state 63
-    SUB             shift and go to state 64
+    G               shift and go to state 68
+    GE              shift and go to state 69
+    L               shift and go to state 70
+    LE              shift and go to state 71
+    ADD             shift and go to state 72
+    SUB             shift and go to state 73
 
-    RelOp                          shift and go to state 57
-    AddOp                          shift and go to state 58
+    RelOp                          shift and go to state 66
+    AddOp                          shift and go to state 67
 
-state 39
+state 40
 
     (32) Addition -> Term .
     (38) Term -> Term . MulOp Factor
@@ -754,13 +835,13 @@ state 39
     ;               reduce using rule 32 (Addition -> Term .)
     OR              reduce using rule 32 (Addition -> Term .)
     )               reduce using rule 32 (Addition -> Term .)
-    MUL             shift and go to state 66
-    DIV             shift and go to state 67
-    MOD             shift and go to state 68
+    MUL             shift and go to state 75
+    DIV             shift and go to state 76
+    MOD             shift and go to state 77
 
-    MulOp                          shift and go to state 65
+    MulOp                          shift and go to state 74
 
-state 40
+state 41
 
     (39) Term -> Factor .
 
@@ -781,30 +862,40 @@ state 40
     )               reduce using rule 39 (Term -> Factor .)
 
 
-state 41
+state 42
 
     (43) Factor -> UnaryOp . Primary
-    (47) Primary -> . ID
-    (48) Primary -> . INTLIT
+    (47) Primary -> . Identifier
+    (48) Primary -> . Literal
     (49) Primary -> . ( Expression )
-    (50) Primary -> . Type ( Expression )
-    (5) Type -> . INT_TYPE
-    (6) Type -> . BOOL_TYPE
-    (7) Type -> . FLOAT_TYPE
-    (8) Type -> . CHAR_TYPE
+    (50) Identifier -> . ID
+    (51) Literal -> . Integer
+    (52) Literal -> . Float
+    (53) Literal -> . Boolean
+    (54) Literal -> . Char
+    (55) Integer -> . INTLIT
+    (58) Float -> . FLOATLIT
+    (56) Boolean -> . TRUE
+    (57) Boolean -> . FALSE
+    (59) Char -> . CHARLIT
 
-    ID              shift and go to state 33
-    INTLIT          shift and go to state 45
-    (               shift and go to state 46
-    INT_TYPE        shift and go to state 3
-    BOOL_TYPE       shift and go to state 4
-    FLOAT_TYPE      shift and go to state 5
-    CHAR_TYPE       shift and go to state 6
+    (               shift and go to state 47
+    ID              shift and go to state 8
+    INTLIT          shift and go to state 52
+    FLOATLIT        shift and go to state 53
+    TRUE            shift and go to state 54
+    FALSE           shift and go to state 55
+    CHARLIT         shift and go to state 56
 
-    Primary                        shift and go to state 69
-    Type                           shift and go to state 47
+    Primary                        shift and go to state 78
+    Identifier                     shift and go to state 34
+    Literal                        shift and go to state 46
+    Integer                        shift and go to state 48
+    Float                          shift and go to state 49
+    Boolean                        shift and go to state 50
+    Char                           shift and go to state 51
 
-state 42
+state 43
 
     (44) Factor -> Primary .
 
@@ -825,62 +916,62 @@ state 42
     )               reduce using rule 44 (Factor -> Primary .)
 
 
-state 43
+state 44
 
     (45) UnaryOp -> SUB .
 
+    (               reduce using rule 45 (UnaryOp -> SUB .)
     ID              reduce using rule 45 (UnaryOp -> SUB .)
     INTLIT          reduce using rule 45 (UnaryOp -> SUB .)
-    (               reduce using rule 45 (UnaryOp -> SUB .)
-    INT_TYPE        reduce using rule 45 (UnaryOp -> SUB .)
-    BOOL_TYPE       reduce using rule 45 (UnaryOp -> SUB .)
-    FLOAT_TYPE      reduce using rule 45 (UnaryOp -> SUB .)
-    CHAR_TYPE       reduce using rule 45 (UnaryOp -> SUB .)
-
-
-state 44
-
-    (46) UnaryOp -> EXC .
-
-    ID              reduce using rule 46 (UnaryOp -> EXC .)
-    INTLIT          reduce using rule 46 (UnaryOp -> EXC .)
-    (               reduce using rule 46 (UnaryOp -> EXC .)
-    INT_TYPE        reduce using rule 46 (UnaryOp -> EXC .)
-    BOOL_TYPE       reduce using rule 46 (UnaryOp -> EXC .)
-    FLOAT_TYPE      reduce using rule 46 (UnaryOp -> EXC .)
-    CHAR_TYPE       reduce using rule 46 (UnaryOp -> EXC .)
+    FLOATLIT        reduce using rule 45 (UnaryOp -> SUB .)
+    TRUE            reduce using rule 45 (UnaryOp -> SUB .)
+    FALSE           reduce using rule 45 (UnaryOp -> SUB .)
+    CHARLIT         reduce using rule 45 (UnaryOp -> SUB .)
 
 
 state 45
 
-    (48) Primary -> INTLIT .
+    (46) UnaryOp -> EXC .
 
-    MUL             reduce using rule 48 (Primary -> INTLIT .)
-    DIV             reduce using rule 48 (Primary -> INTLIT .)
-    MOD             reduce using rule 48 (Primary -> INTLIT .)
-    G               reduce using rule 48 (Primary -> INTLIT .)
-    GE              reduce using rule 48 (Primary -> INTLIT .)
-    L               reduce using rule 48 (Primary -> INTLIT .)
-    LE              reduce using rule 48 (Primary -> INTLIT .)
-    ADD             reduce using rule 48 (Primary -> INTLIT .)
-    SUB             reduce using rule 48 (Primary -> INTLIT .)
-    EQ              reduce using rule 48 (Primary -> INTLIT .)
-    DIF             reduce using rule 48 (Primary -> INTLIT .)
-    AND             reduce using rule 48 (Primary -> INTLIT .)
-    ;               reduce using rule 48 (Primary -> INTLIT .)
-    OR              reduce using rule 48 (Primary -> INTLIT .)
-    )               reduce using rule 48 (Primary -> INTLIT .)
+    (               reduce using rule 46 (UnaryOp -> EXC .)
+    ID              reduce using rule 46 (UnaryOp -> EXC .)
+    INTLIT          reduce using rule 46 (UnaryOp -> EXC .)
+    FLOATLIT        reduce using rule 46 (UnaryOp -> EXC .)
+    TRUE            reduce using rule 46 (UnaryOp -> EXC .)
+    FALSE           reduce using rule 46 (UnaryOp -> EXC .)
+    CHARLIT         reduce using rule 46 (UnaryOp -> EXC .)
 
 
 state 46
+
+    (48) Primary -> Literal .
+
+    MUL             reduce using rule 48 (Primary -> Literal .)
+    DIV             reduce using rule 48 (Primary -> Literal .)
+    MOD             reduce using rule 48 (Primary -> Literal .)
+    G               reduce using rule 48 (Primary -> Literal .)
+    GE              reduce using rule 48 (Primary -> Literal .)
+    L               reduce using rule 48 (Primary -> Literal .)
+    LE              reduce using rule 48 (Primary -> Literal .)
+    ADD             reduce using rule 48 (Primary -> Literal .)
+    SUB             reduce using rule 48 (Primary -> Literal .)
+    EQ              reduce using rule 48 (Primary -> Literal .)
+    DIF             reduce using rule 48 (Primary -> Literal .)
+    AND             reduce using rule 48 (Primary -> Literal .)
+    ;               reduce using rule 48 (Primary -> Literal .)
+    OR              reduce using rule 48 (Primary -> Literal .)
+    )               reduce using rule 48 (Primary -> Literal .)
+
+
+state 47
 
     (49) Primary -> ( . Expression )
     (17) Expression -> . Expression OR Conjunction
     (18) Expression -> . Conjunction
     (19) Conjunction -> . Conjunction AND Equality
     (20) Conjunction -> . Equality
-    (21) Equality -> . Relation
-    (22) Equality -> . Relation EquOp Relation
+    (21) Equality -> . Relation EquOp Relation
+    (22) Equality -> . Relation
     (25) Relation -> . Addition
     (26) Relation -> . Addition RelOp Addition
     (31) Addition -> . Addition AddOp Term
@@ -891,93 +982,285 @@ state 46
     (44) Factor -> . Primary
     (45) UnaryOp -> . SUB
     (46) UnaryOp -> . EXC
-    (47) Primary -> . ID
-    (48) Primary -> . INTLIT
+    (47) Primary -> . Identifier
+    (48) Primary -> . Literal
     (49) Primary -> . ( Expression )
-    (50) Primary -> . Type ( Expression )
-    (5) Type -> . INT_TYPE
-    (6) Type -> . BOOL_TYPE
-    (7) Type -> . FLOAT_TYPE
-    (8) Type -> . CHAR_TYPE
+    (50) Identifier -> . ID
+    (51) Literal -> . Integer
+    (52) Literal -> . Float
+    (53) Literal -> . Boolean
+    (54) Literal -> . Char
+    (55) Integer -> . INTLIT
+    (58) Float -> . FLOATLIT
+    (56) Boolean -> . TRUE
+    (57) Boolean -> . FALSE
+    (59) Char -> . CHARLIT
 
-    SUB             shift and go to state 43
-    EXC             shift and go to state 44
-    ID              shift and go to state 33
-    INTLIT          shift and go to state 45
-    (               shift and go to state 46
-    INT_TYPE        shift and go to state 3
-    BOOL_TYPE       shift and go to state 4
-    FLOAT_TYPE      shift and go to state 5
-    CHAR_TYPE       shift and go to state 6
+    SUB             shift and go to state 44
+    EXC             shift and go to state 45
+    (               shift and go to state 47
+    ID              shift and go to state 8
+    INTLIT          shift and go to state 52
+    FLOATLIT        shift and go to state 53
+    TRUE            shift and go to state 54
+    FALSE           shift and go to state 55
+    CHARLIT         shift and go to state 56
 
-    Expression                     shift and go to state 70
-    Conjunction                    shift and go to state 35
-    Equality                       shift and go to state 36
-    Relation                       shift and go to state 37
-    Addition                       shift and go to state 38
-    Term                           shift and go to state 39
-    Factor                         shift and go to state 40
-    UnaryOp                        shift and go to state 41
-    Primary                        shift and go to state 42
-    Type                           shift and go to state 47
-
-state 47
-
-    (50) Primary -> Type . ( Expression )
-
-    (               shift and go to state 71
-
+    Expression                     shift and go to state 79
+    Conjunction                    shift and go to state 36
+    Equality                       shift and go to state 37
+    Relation                       shift and go to state 38
+    Addition                       shift and go to state 39
+    Term                           shift and go to state 40
+    Factor                         shift and go to state 41
+    UnaryOp                        shift and go to state 42
+    Primary                        shift and go to state 43
+    Identifier                     shift and go to state 34
+    Literal                        shift and go to state 46
+    Integer                        shift and go to state 48
+    Float                          shift and go to state 49
+    Boolean                        shift and go to state 50
+    Char                           shift and go to state 51
 
 state 48
+
+    (51) Literal -> Integer .
+
+    MUL             reduce using rule 51 (Literal -> Integer .)
+    DIV             reduce using rule 51 (Literal -> Integer .)
+    MOD             reduce using rule 51 (Literal -> Integer .)
+    G               reduce using rule 51 (Literal -> Integer .)
+    GE              reduce using rule 51 (Literal -> Integer .)
+    L               reduce using rule 51 (Literal -> Integer .)
+    LE              reduce using rule 51 (Literal -> Integer .)
+    ADD             reduce using rule 51 (Literal -> Integer .)
+    SUB             reduce using rule 51 (Literal -> Integer .)
+    EQ              reduce using rule 51 (Literal -> Integer .)
+    DIF             reduce using rule 51 (Literal -> Integer .)
+    AND             reduce using rule 51 (Literal -> Integer .)
+    ;               reduce using rule 51 (Literal -> Integer .)
+    OR              reduce using rule 51 (Literal -> Integer .)
+    )               reduce using rule 51 (Literal -> Integer .)
+
+
+state 49
+
+    (52) Literal -> Float .
+
+    MUL             reduce using rule 52 (Literal -> Float .)
+    DIV             reduce using rule 52 (Literal -> Float .)
+    MOD             reduce using rule 52 (Literal -> Float .)
+    G               reduce using rule 52 (Literal -> Float .)
+    GE              reduce using rule 52 (Literal -> Float .)
+    L               reduce using rule 52 (Literal -> Float .)
+    LE              reduce using rule 52 (Literal -> Float .)
+    ADD             reduce using rule 52 (Literal -> Float .)
+    SUB             reduce using rule 52 (Literal -> Float .)
+    EQ              reduce using rule 52 (Literal -> Float .)
+    DIF             reduce using rule 52 (Literal -> Float .)
+    AND             reduce using rule 52 (Literal -> Float .)
+    ;               reduce using rule 52 (Literal -> Float .)
+    OR              reduce using rule 52 (Literal -> Float .)
+    )               reduce using rule 52 (Literal -> Float .)
+
+
+state 50
+
+    (53) Literal -> Boolean .
+
+    MUL             reduce using rule 53 (Literal -> Boolean .)
+    DIV             reduce using rule 53 (Literal -> Boolean .)
+    MOD             reduce using rule 53 (Literal -> Boolean .)
+    G               reduce using rule 53 (Literal -> Boolean .)
+    GE              reduce using rule 53 (Literal -> Boolean .)
+    L               reduce using rule 53 (Literal -> Boolean .)
+    LE              reduce using rule 53 (Literal -> Boolean .)
+    ADD             reduce using rule 53 (Literal -> Boolean .)
+    SUB             reduce using rule 53 (Literal -> Boolean .)
+    EQ              reduce using rule 53 (Literal -> Boolean .)
+    DIF             reduce using rule 53 (Literal -> Boolean .)
+    AND             reduce using rule 53 (Literal -> Boolean .)
+    ;               reduce using rule 53 (Literal -> Boolean .)
+    OR              reduce using rule 53 (Literal -> Boolean .)
+    )               reduce using rule 53 (Literal -> Boolean .)
+
+
+state 51
+
+    (54) Literal -> Char .
+
+    MUL             reduce using rule 54 (Literal -> Char .)
+    DIV             reduce using rule 54 (Literal -> Char .)
+    MOD             reduce using rule 54 (Literal -> Char .)
+    G               reduce using rule 54 (Literal -> Char .)
+    GE              reduce using rule 54 (Literal -> Char .)
+    L               reduce using rule 54 (Literal -> Char .)
+    LE              reduce using rule 54 (Literal -> Char .)
+    ADD             reduce using rule 54 (Literal -> Char .)
+    SUB             reduce using rule 54 (Literal -> Char .)
+    EQ              reduce using rule 54 (Literal -> Char .)
+    DIF             reduce using rule 54 (Literal -> Char .)
+    AND             reduce using rule 54 (Literal -> Char .)
+    ;               reduce using rule 54 (Literal -> Char .)
+    OR              reduce using rule 54 (Literal -> Char .)
+    )               reduce using rule 54 (Literal -> Char .)
+
+
+state 52
+
+    (55) Integer -> INTLIT .
+
+    MUL             reduce using rule 55 (Integer -> INTLIT .)
+    DIV             reduce using rule 55 (Integer -> INTLIT .)
+    MOD             reduce using rule 55 (Integer -> INTLIT .)
+    G               reduce using rule 55 (Integer -> INTLIT .)
+    GE              reduce using rule 55 (Integer -> INTLIT .)
+    L               reduce using rule 55 (Integer -> INTLIT .)
+    LE              reduce using rule 55 (Integer -> INTLIT .)
+    ADD             reduce using rule 55 (Integer -> INTLIT .)
+    SUB             reduce using rule 55 (Integer -> INTLIT .)
+    EQ              reduce using rule 55 (Integer -> INTLIT .)
+    DIF             reduce using rule 55 (Integer -> INTLIT .)
+    AND             reduce using rule 55 (Integer -> INTLIT .)
+    ;               reduce using rule 55 (Integer -> INTLIT .)
+    OR              reduce using rule 55 (Integer -> INTLIT .)
+    )               reduce using rule 55 (Integer -> INTLIT .)
+
+
+state 53
+
+    (58) Float -> FLOATLIT .
+
+    MUL             reduce using rule 58 (Float -> FLOATLIT .)
+    DIV             reduce using rule 58 (Float -> FLOATLIT .)
+    MOD             reduce using rule 58 (Float -> FLOATLIT .)
+    G               reduce using rule 58 (Float -> FLOATLIT .)
+    GE              reduce using rule 58 (Float -> FLOATLIT .)
+    L               reduce using rule 58 (Float -> FLOATLIT .)
+    LE              reduce using rule 58 (Float -> FLOATLIT .)
+    ADD             reduce using rule 58 (Float -> FLOATLIT .)
+    SUB             reduce using rule 58 (Float -> FLOATLIT .)
+    EQ              reduce using rule 58 (Float -> FLOATLIT .)
+    DIF             reduce using rule 58 (Float -> FLOATLIT .)
+    AND             reduce using rule 58 (Float -> FLOATLIT .)
+    ;               reduce using rule 58 (Float -> FLOATLIT .)
+    OR              reduce using rule 58 (Float -> FLOATLIT .)
+    )               reduce using rule 58 (Float -> FLOATLIT .)
+
+
+state 54
+
+    (56) Boolean -> TRUE .
+
+    MUL             reduce using rule 56 (Boolean -> TRUE .)
+    DIV             reduce using rule 56 (Boolean -> TRUE .)
+    MOD             reduce using rule 56 (Boolean -> TRUE .)
+    G               reduce using rule 56 (Boolean -> TRUE .)
+    GE              reduce using rule 56 (Boolean -> TRUE .)
+    L               reduce using rule 56 (Boolean -> TRUE .)
+    LE              reduce using rule 56 (Boolean -> TRUE .)
+    ADD             reduce using rule 56 (Boolean -> TRUE .)
+    SUB             reduce using rule 56 (Boolean -> TRUE .)
+    EQ              reduce using rule 56 (Boolean -> TRUE .)
+    DIF             reduce using rule 56 (Boolean -> TRUE .)
+    AND             reduce using rule 56 (Boolean -> TRUE .)
+    ;               reduce using rule 56 (Boolean -> TRUE .)
+    OR              reduce using rule 56 (Boolean -> TRUE .)
+    )               reduce using rule 56 (Boolean -> TRUE .)
+
+
+state 55
+
+    (57) Boolean -> FALSE .
+
+    MUL             reduce using rule 57 (Boolean -> FALSE .)
+    DIV             reduce using rule 57 (Boolean -> FALSE .)
+    MOD             reduce using rule 57 (Boolean -> FALSE .)
+    G               reduce using rule 57 (Boolean -> FALSE .)
+    GE              reduce using rule 57 (Boolean -> FALSE .)
+    L               reduce using rule 57 (Boolean -> FALSE .)
+    LE              reduce using rule 57 (Boolean -> FALSE .)
+    ADD             reduce using rule 57 (Boolean -> FALSE .)
+    SUB             reduce using rule 57 (Boolean -> FALSE .)
+    EQ              reduce using rule 57 (Boolean -> FALSE .)
+    DIF             reduce using rule 57 (Boolean -> FALSE .)
+    AND             reduce using rule 57 (Boolean -> FALSE .)
+    ;               reduce using rule 57 (Boolean -> FALSE .)
+    OR              reduce using rule 57 (Boolean -> FALSE .)
+    )               reduce using rule 57 (Boolean -> FALSE .)
+
+
+state 56
+
+    (59) Char -> CHARLIT .
+
+    MUL             reduce using rule 59 (Char -> CHARLIT .)
+    DIV             reduce using rule 59 (Char -> CHARLIT .)
+    MOD             reduce using rule 59 (Char -> CHARLIT .)
+    G               reduce using rule 59 (Char -> CHARLIT .)
+    GE              reduce using rule 59 (Char -> CHARLIT .)
+    L               reduce using rule 59 (Char -> CHARLIT .)
+    LE              reduce using rule 59 (Char -> CHARLIT .)
+    ADD             reduce using rule 59 (Char -> CHARLIT .)
+    SUB             reduce using rule 59 (Char -> CHARLIT .)
+    EQ              reduce using rule 59 (Char -> CHARLIT .)
+    DIF             reduce using rule 59 (Char -> CHARLIT .)
+    AND             reduce using rule 59 (Char -> CHARLIT .)
+    ;               reduce using rule 59 (Char -> CHARLIT .)
+    OR              reduce using rule 59 (Char -> CHARLIT .)
+    )               reduce using rule 59 (Char -> CHARLIT .)
+
+
+state 57
 
     (9) Block -> { Statements } .
 
     }               reduce using rule 9 (Block -> { Statements } .)
     {               reduce using rule 9 (Block -> { Statements } .)
-    ID              reduce using rule 9 (Block -> { Statements } .)
     IF              reduce using rule 9 (Block -> { Statements } .)
     WHILE           reduce using rule 9 (Block -> { Statements } .)
+    ID              reduce using rule 9 (Block -> { Statements } .)
     ELSE            reduce using rule 9 (Block -> { Statements } .)
 
 
-state 49
+state 58
 
     (35) IfStatement -> IF ( Expression . ) Statement
     (36) IfStatement -> IF ( Expression . ) Statement ELSE Statement
     (17) Expression -> Expression . OR Conjunction
 
-    )               shift and go to state 72
-    OR              shift and go to state 52
+    )               shift and go to state 80
+    OR              shift and go to state 61
 
 
-state 50
+state 59
 
     (37) WhileStatement -> WHILE ( Expression . ) Statement
     (17) Expression -> Expression . OR Conjunction
 
-    )               shift and go to state 73
-    OR              shift and go to state 52
+    )               shift and go to state 81
+    OR              shift and go to state 61
 
 
-state 51
+state 60
 
-    (16) Assignment -> ID = Expression ; .
+    (16) Assignment -> Identifier = Expression ; .
 
-    }               reduce using rule 16 (Assignment -> ID = Expression ; .)
-    {               reduce using rule 16 (Assignment -> ID = Expression ; .)
-    ID              reduce using rule 16 (Assignment -> ID = Expression ; .)
-    IF              reduce using rule 16 (Assignment -> ID = Expression ; .)
-    WHILE           reduce using rule 16 (Assignment -> ID = Expression ; .)
-    ELSE            reduce using rule 16 (Assignment -> ID = Expression ; .)
+    }               reduce using rule 16 (Assignment -> Identifier = Expression ; .)
+    {               reduce using rule 16 (Assignment -> Identifier = Expression ; .)
+    IF              reduce using rule 16 (Assignment -> Identifier = Expression ; .)
+    WHILE           reduce using rule 16 (Assignment -> Identifier = Expression ; .)
+    ID              reduce using rule 16 (Assignment -> Identifier = Expression ; .)
+    ELSE            reduce using rule 16 (Assignment -> Identifier = Expression ; .)
 
 
-state 52
+state 61
 
     (17) Expression -> Expression OR . Conjunction
     (19) Conjunction -> . Conjunction AND Equality
     (20) Conjunction -> . Equality
-    (21) Equality -> . Relation
-    (22) Equality -> . Relation EquOp Relation
+    (21) Equality -> . Relation EquOp Relation
+    (22) Equality -> . Relation
     (25) Relation -> . Addition
     (26) Relation -> . Addition RelOp Addition
     (31) Addition -> . Addition AddOp Term
@@ -988,40 +1271,50 @@ state 52
     (44) Factor -> . Primary
     (45) UnaryOp -> . SUB
     (46) UnaryOp -> . EXC
-    (47) Primary -> . ID
-    (48) Primary -> . INTLIT
+    (47) Primary -> . Identifier
+    (48) Primary -> . Literal
     (49) Primary -> . ( Expression )
-    (50) Primary -> . Type ( Expression )
-    (5) Type -> . INT_TYPE
-    (6) Type -> . BOOL_TYPE
-    (7) Type -> . FLOAT_TYPE
-    (8) Type -> . CHAR_TYPE
+    (50) Identifier -> . ID
+    (51) Literal -> . Integer
+    (52) Literal -> . Float
+    (53) Literal -> . Boolean
+    (54) Literal -> . Char
+    (55) Integer -> . INTLIT
+    (58) Float -> . FLOATLIT
+    (56) Boolean -> . TRUE
+    (57) Boolean -> . FALSE
+    (59) Char -> . CHARLIT
 
-    SUB             shift and go to state 43
-    EXC             shift and go to state 44
-    ID              shift and go to state 33
-    INTLIT          shift and go to state 45
-    (               shift and go to state 46
-    INT_TYPE        shift and go to state 3
-    BOOL_TYPE       shift and go to state 4
-    FLOAT_TYPE      shift and go to state 5
-    CHAR_TYPE       shift and go to state 6
+    SUB             shift and go to state 44
+    EXC             shift and go to state 45
+    (               shift and go to state 47
+    ID              shift and go to state 8
+    INTLIT          shift and go to state 52
+    FLOATLIT        shift and go to state 53
+    TRUE            shift and go to state 54
+    FALSE           shift and go to state 55
+    CHARLIT         shift and go to state 56
 
-    Conjunction                    shift and go to state 74
-    Equality                       shift and go to state 36
-    Relation                       shift and go to state 37
-    Addition                       shift and go to state 38
-    Term                           shift and go to state 39
-    Factor                         shift and go to state 40
-    UnaryOp                        shift and go to state 41
-    Primary                        shift and go to state 42
-    Type                           shift and go to state 47
+    Conjunction                    shift and go to state 82
+    Equality                       shift and go to state 37
+    Relation                       shift and go to state 38
+    Addition                       shift and go to state 39
+    Term                           shift and go to state 40
+    Factor                         shift and go to state 41
+    UnaryOp                        shift and go to state 42
+    Primary                        shift and go to state 43
+    Identifier                     shift and go to state 34
+    Literal                        shift and go to state 46
+    Integer                        shift and go to state 48
+    Float                          shift and go to state 49
+    Boolean                        shift and go to state 50
+    Char                           shift and go to state 51
 
-state 53
+state 62
 
     (19) Conjunction -> Conjunction AND . Equality
-    (21) Equality -> . Relation
-    (22) Equality -> . Relation EquOp Relation
+    (21) Equality -> . Relation EquOp Relation
+    (22) Equality -> . Relation
     (25) Relation -> . Addition
     (26) Relation -> . Addition RelOp Addition
     (31) Addition -> . Addition AddOp Term
@@ -1032,37 +1325,47 @@ state 53
     (44) Factor -> . Primary
     (45) UnaryOp -> . SUB
     (46) UnaryOp -> . EXC
-    (47) Primary -> . ID
-    (48) Primary -> . INTLIT
+    (47) Primary -> . Identifier
+    (48) Primary -> . Literal
     (49) Primary -> . ( Expression )
-    (50) Primary -> . Type ( Expression )
-    (5) Type -> . INT_TYPE
-    (6) Type -> . BOOL_TYPE
-    (7) Type -> . FLOAT_TYPE
-    (8) Type -> . CHAR_TYPE
+    (50) Identifier -> . ID
+    (51) Literal -> . Integer
+    (52) Literal -> . Float
+    (53) Literal -> . Boolean
+    (54) Literal -> . Char
+    (55) Integer -> . INTLIT
+    (58) Float -> . FLOATLIT
+    (56) Boolean -> . TRUE
+    (57) Boolean -> . FALSE
+    (59) Char -> . CHARLIT
 
-    SUB             shift and go to state 43
-    EXC             shift and go to state 44
-    ID              shift and go to state 33
-    INTLIT          shift and go to state 45
-    (               shift and go to state 46
-    INT_TYPE        shift and go to state 3
-    BOOL_TYPE       shift and go to state 4
-    FLOAT_TYPE      shift and go to state 5
-    CHAR_TYPE       shift and go to state 6
+    SUB             shift and go to state 44
+    EXC             shift and go to state 45
+    (               shift and go to state 47
+    ID              shift and go to state 8
+    INTLIT          shift and go to state 52
+    FLOATLIT        shift and go to state 53
+    TRUE            shift and go to state 54
+    FALSE           shift and go to state 55
+    CHARLIT         shift and go to state 56
 
-    Equality                       shift and go to state 75
-    Relation                       shift and go to state 37
-    Addition                       shift and go to state 38
-    Term                           shift and go to state 39
-    Factor                         shift and go to state 40
-    UnaryOp                        shift and go to state 41
-    Primary                        shift and go to state 42
-    Type                           shift and go to state 47
+    Equality                       shift and go to state 83
+    Relation                       shift and go to state 38
+    Addition                       shift and go to state 39
+    Term                           shift and go to state 40
+    Factor                         shift and go to state 41
+    UnaryOp                        shift and go to state 42
+    Primary                        shift and go to state 43
+    Identifier                     shift and go to state 34
+    Literal                        shift and go to state 46
+    Integer                        shift and go to state 48
+    Float                          shift and go to state 49
+    Boolean                        shift and go to state 50
+    Char                           shift and go to state 51
 
-state 54
+state 63
 
-    (22) Equality -> Relation EquOp . Relation
+    (21) Equality -> Relation EquOp . Relation
     (25) Relation -> . Addition
     (26) Relation -> . Addition RelOp Addition
     (31) Addition -> . Addition AddOp Term
@@ -1073,64 +1376,74 @@ state 54
     (44) Factor -> . Primary
     (45) UnaryOp -> . SUB
     (46) UnaryOp -> . EXC
-    (47) Primary -> . ID
-    (48) Primary -> . INTLIT
+    (47) Primary -> . Identifier
+    (48) Primary -> . Literal
     (49) Primary -> . ( Expression )
-    (50) Primary -> . Type ( Expression )
-    (5) Type -> . INT_TYPE
-    (6) Type -> . BOOL_TYPE
-    (7) Type -> . FLOAT_TYPE
-    (8) Type -> . CHAR_TYPE
+    (50) Identifier -> . ID
+    (51) Literal -> . Integer
+    (52) Literal -> . Float
+    (53) Literal -> . Boolean
+    (54) Literal -> . Char
+    (55) Integer -> . INTLIT
+    (58) Float -> . FLOATLIT
+    (56) Boolean -> . TRUE
+    (57) Boolean -> . FALSE
+    (59) Char -> . CHARLIT
 
-    SUB             shift and go to state 43
-    EXC             shift and go to state 44
-    ID              shift and go to state 33
-    INTLIT          shift and go to state 45
-    (               shift and go to state 46
-    INT_TYPE        shift and go to state 3
-    BOOL_TYPE       shift and go to state 4
-    FLOAT_TYPE      shift and go to state 5
-    CHAR_TYPE       shift and go to state 6
+    SUB             shift and go to state 44
+    EXC             shift and go to state 45
+    (               shift and go to state 47
+    ID              shift and go to state 8
+    INTLIT          shift and go to state 52
+    FLOATLIT        shift and go to state 53
+    TRUE            shift and go to state 54
+    FALSE           shift and go to state 55
+    CHARLIT         shift and go to state 56
 
-    Relation                       shift and go to state 76
-    Addition                       shift and go to state 38
-    Term                           shift and go to state 39
-    Factor                         shift and go to state 40
-    UnaryOp                        shift and go to state 41
-    Primary                        shift and go to state 42
-    Type                           shift and go to state 47
+    Relation                       shift and go to state 84
+    Addition                       shift and go to state 39
+    Term                           shift and go to state 40
+    Factor                         shift and go to state 41
+    UnaryOp                        shift and go to state 42
+    Primary                        shift and go to state 43
+    Identifier                     shift and go to state 34
+    Literal                        shift and go to state 46
+    Integer                        shift and go to state 48
+    Float                          shift and go to state 49
+    Boolean                        shift and go to state 50
+    Char                           shift and go to state 51
 
-state 55
+state 64
 
     (23) EquOp -> EQ .
 
     SUB             reduce using rule 23 (EquOp -> EQ .)
     EXC             reduce using rule 23 (EquOp -> EQ .)
+    (               reduce using rule 23 (EquOp -> EQ .)
     ID              reduce using rule 23 (EquOp -> EQ .)
     INTLIT          reduce using rule 23 (EquOp -> EQ .)
-    (               reduce using rule 23 (EquOp -> EQ .)
-    INT_TYPE        reduce using rule 23 (EquOp -> EQ .)
-    BOOL_TYPE       reduce using rule 23 (EquOp -> EQ .)
-    FLOAT_TYPE      reduce using rule 23 (EquOp -> EQ .)
-    CHAR_TYPE       reduce using rule 23 (EquOp -> EQ .)
+    FLOATLIT        reduce using rule 23 (EquOp -> EQ .)
+    TRUE            reduce using rule 23 (EquOp -> EQ .)
+    FALSE           reduce using rule 23 (EquOp -> EQ .)
+    CHARLIT         reduce using rule 23 (EquOp -> EQ .)
 
 
-state 56
+state 65
 
     (24) EquOp -> DIF .
 
     SUB             reduce using rule 24 (EquOp -> DIF .)
     EXC             reduce using rule 24 (EquOp -> DIF .)
+    (               reduce using rule 24 (EquOp -> DIF .)
     ID              reduce using rule 24 (EquOp -> DIF .)
     INTLIT          reduce using rule 24 (EquOp -> DIF .)
-    (               reduce using rule 24 (EquOp -> DIF .)
-    INT_TYPE        reduce using rule 24 (EquOp -> DIF .)
-    BOOL_TYPE       reduce using rule 24 (EquOp -> DIF .)
-    FLOAT_TYPE      reduce using rule 24 (EquOp -> DIF .)
-    CHAR_TYPE       reduce using rule 24 (EquOp -> DIF .)
+    FLOATLIT        reduce using rule 24 (EquOp -> DIF .)
+    TRUE            reduce using rule 24 (EquOp -> DIF .)
+    FALSE           reduce using rule 24 (EquOp -> DIF .)
+    CHARLIT         reduce using rule 24 (EquOp -> DIF .)
 
 
-state 57
+state 66
 
     (26) Relation -> Addition RelOp . Addition
     (31) Addition -> . Addition AddOp Term
@@ -1141,33 +1454,43 @@ state 57
     (44) Factor -> . Primary
     (45) UnaryOp -> . SUB
     (46) UnaryOp -> . EXC
-    (47) Primary -> . ID
-    (48) Primary -> . INTLIT
+    (47) Primary -> . Identifier
+    (48) Primary -> . Literal
     (49) Primary -> . ( Expression )
-    (50) Primary -> . Type ( Expression )
-    (5) Type -> . INT_TYPE
-    (6) Type -> . BOOL_TYPE
-    (7) Type -> . FLOAT_TYPE
-    (8) Type -> . CHAR_TYPE
+    (50) Identifier -> . ID
+    (51) Literal -> . Integer
+    (52) Literal -> . Float
+    (53) Literal -> . Boolean
+    (54) Literal -> . Char
+    (55) Integer -> . INTLIT
+    (58) Float -> . FLOATLIT
+    (56) Boolean -> . TRUE
+    (57) Boolean -> . FALSE
+    (59) Char -> . CHARLIT
 
-    SUB             shift and go to state 43
-    EXC             shift and go to state 44
-    ID              shift and go to state 33
-    INTLIT          shift and go to state 45
-    (               shift and go to state 46
-    INT_TYPE        shift and go to state 3
-    BOOL_TYPE       shift and go to state 4
-    FLOAT_TYPE      shift and go to state 5
-    CHAR_TYPE       shift and go to state 6
+    SUB             shift and go to state 44
+    EXC             shift and go to state 45
+    (               shift and go to state 47
+    ID              shift and go to state 8
+    INTLIT          shift and go to state 52
+    FLOATLIT        shift and go to state 53
+    TRUE            shift and go to state 54
+    FALSE           shift and go to state 55
+    CHARLIT         shift and go to state 56
 
-    Addition                       shift and go to state 77
-    Term                           shift and go to state 39
-    Factor                         shift and go to state 40
-    UnaryOp                        shift and go to state 41
-    Primary                        shift and go to state 42
-    Type                           shift and go to state 47
+    Addition                       shift and go to state 85
+    Term                           shift and go to state 40
+    Factor                         shift and go to state 41
+    UnaryOp                        shift and go to state 42
+    Primary                        shift and go to state 43
+    Identifier                     shift and go to state 34
+    Literal                        shift and go to state 46
+    Integer                        shift and go to state 48
+    Float                          shift and go to state 49
+    Boolean                        shift and go to state 50
+    Char                           shift and go to state 51
 
-state 58
+state 67
 
     (31) Addition -> Addition AddOp . Term
     (38) Term -> . Term MulOp Factor
@@ -1176,198 +1499,218 @@ state 58
     (44) Factor -> . Primary
     (45) UnaryOp -> . SUB
     (46) UnaryOp -> . EXC
-    (47) Primary -> . ID
-    (48) Primary -> . INTLIT
+    (47) Primary -> . Identifier
+    (48) Primary -> . Literal
     (49) Primary -> . ( Expression )
-    (50) Primary -> . Type ( Expression )
-    (5) Type -> . INT_TYPE
-    (6) Type -> . BOOL_TYPE
-    (7) Type -> . FLOAT_TYPE
-    (8) Type -> . CHAR_TYPE
+    (50) Identifier -> . ID
+    (51) Literal -> . Integer
+    (52) Literal -> . Float
+    (53) Literal -> . Boolean
+    (54) Literal -> . Char
+    (55) Integer -> . INTLIT
+    (58) Float -> . FLOATLIT
+    (56) Boolean -> . TRUE
+    (57) Boolean -> . FALSE
+    (59) Char -> . CHARLIT
 
-    SUB             shift and go to state 43
-    EXC             shift and go to state 44
-    ID              shift and go to state 33
-    INTLIT          shift and go to state 45
-    (               shift and go to state 46
-    INT_TYPE        shift and go to state 3
-    BOOL_TYPE       shift and go to state 4
-    FLOAT_TYPE      shift and go to state 5
-    CHAR_TYPE       shift and go to state 6
+    SUB             shift and go to state 44
+    EXC             shift and go to state 45
+    (               shift and go to state 47
+    ID              shift and go to state 8
+    INTLIT          shift and go to state 52
+    FLOATLIT        shift and go to state 53
+    TRUE            shift and go to state 54
+    FALSE           shift and go to state 55
+    CHARLIT         shift and go to state 56
 
-    Term                           shift and go to state 78
-    Factor                         shift and go to state 40
-    UnaryOp                        shift and go to state 41
-    Primary                        shift and go to state 42
-    Type                           shift and go to state 47
+    Term                           shift and go to state 86
+    Factor                         shift and go to state 41
+    UnaryOp                        shift and go to state 42
+    Primary                        shift and go to state 43
+    Identifier                     shift and go to state 34
+    Literal                        shift and go to state 46
+    Integer                        shift and go to state 48
+    Float                          shift and go to state 49
+    Boolean                        shift and go to state 50
+    Char                           shift and go to state 51
 
-state 59
+state 68
 
     (27) RelOp -> G .
 
     SUB             reduce using rule 27 (RelOp -> G .)
     EXC             reduce using rule 27 (RelOp -> G .)
+    (               reduce using rule 27 (RelOp -> G .)
     ID              reduce using rule 27 (RelOp -> G .)
     INTLIT          reduce using rule 27 (RelOp -> G .)
-    (               reduce using rule 27 (RelOp -> G .)
-    INT_TYPE        reduce using rule 27 (RelOp -> G .)
-    BOOL_TYPE       reduce using rule 27 (RelOp -> G .)
-    FLOAT_TYPE      reduce using rule 27 (RelOp -> G .)
-    CHAR_TYPE       reduce using rule 27 (RelOp -> G .)
+    FLOATLIT        reduce using rule 27 (RelOp -> G .)
+    TRUE            reduce using rule 27 (RelOp -> G .)
+    FALSE           reduce using rule 27 (RelOp -> G .)
+    CHARLIT         reduce using rule 27 (RelOp -> G .)
 
 
-state 60
+state 69
 
     (28) RelOp -> GE .
 
     SUB             reduce using rule 28 (RelOp -> GE .)
     EXC             reduce using rule 28 (RelOp -> GE .)
+    (               reduce using rule 28 (RelOp -> GE .)
     ID              reduce using rule 28 (RelOp -> GE .)
     INTLIT          reduce using rule 28 (RelOp -> GE .)
-    (               reduce using rule 28 (RelOp -> GE .)
-    INT_TYPE        reduce using rule 28 (RelOp -> GE .)
-    BOOL_TYPE       reduce using rule 28 (RelOp -> GE .)
-    FLOAT_TYPE      reduce using rule 28 (RelOp -> GE .)
-    CHAR_TYPE       reduce using rule 28 (RelOp -> GE .)
+    FLOATLIT        reduce using rule 28 (RelOp -> GE .)
+    TRUE            reduce using rule 28 (RelOp -> GE .)
+    FALSE           reduce using rule 28 (RelOp -> GE .)
+    CHARLIT         reduce using rule 28 (RelOp -> GE .)
 
 
-state 61
+state 70
 
     (29) RelOp -> L .
 
     SUB             reduce using rule 29 (RelOp -> L .)
     EXC             reduce using rule 29 (RelOp -> L .)
+    (               reduce using rule 29 (RelOp -> L .)
     ID              reduce using rule 29 (RelOp -> L .)
     INTLIT          reduce using rule 29 (RelOp -> L .)
-    (               reduce using rule 29 (RelOp -> L .)
-    INT_TYPE        reduce using rule 29 (RelOp -> L .)
-    BOOL_TYPE       reduce using rule 29 (RelOp -> L .)
-    FLOAT_TYPE      reduce using rule 29 (RelOp -> L .)
-    CHAR_TYPE       reduce using rule 29 (RelOp -> L .)
+    FLOATLIT        reduce using rule 29 (RelOp -> L .)
+    TRUE            reduce using rule 29 (RelOp -> L .)
+    FALSE           reduce using rule 29 (RelOp -> L .)
+    CHARLIT         reduce using rule 29 (RelOp -> L .)
 
 
-state 62
+state 71
 
     (30) RelOp -> LE .
 
     SUB             reduce using rule 30 (RelOp -> LE .)
     EXC             reduce using rule 30 (RelOp -> LE .)
+    (               reduce using rule 30 (RelOp -> LE .)
     ID              reduce using rule 30 (RelOp -> LE .)
     INTLIT          reduce using rule 30 (RelOp -> LE .)
-    (               reduce using rule 30 (RelOp -> LE .)
-    INT_TYPE        reduce using rule 30 (RelOp -> LE .)
-    BOOL_TYPE       reduce using rule 30 (RelOp -> LE .)
-    FLOAT_TYPE      reduce using rule 30 (RelOp -> LE .)
-    CHAR_TYPE       reduce using rule 30 (RelOp -> LE .)
+    FLOATLIT        reduce using rule 30 (RelOp -> LE .)
+    TRUE            reduce using rule 30 (RelOp -> LE .)
+    FALSE           reduce using rule 30 (RelOp -> LE .)
+    CHARLIT         reduce using rule 30 (RelOp -> LE .)
 
 
-state 63
+state 72
 
     (33) AddOp -> ADD .
 
     SUB             reduce using rule 33 (AddOp -> ADD .)
     EXC             reduce using rule 33 (AddOp -> ADD .)
+    (               reduce using rule 33 (AddOp -> ADD .)
     ID              reduce using rule 33 (AddOp -> ADD .)
     INTLIT          reduce using rule 33 (AddOp -> ADD .)
-    (               reduce using rule 33 (AddOp -> ADD .)
-    INT_TYPE        reduce using rule 33 (AddOp -> ADD .)
-    BOOL_TYPE       reduce using rule 33 (AddOp -> ADD .)
-    FLOAT_TYPE      reduce using rule 33 (AddOp -> ADD .)
-    CHAR_TYPE       reduce using rule 33 (AddOp -> ADD .)
+    FLOATLIT        reduce using rule 33 (AddOp -> ADD .)
+    TRUE            reduce using rule 33 (AddOp -> ADD .)
+    FALSE           reduce using rule 33 (AddOp -> ADD .)
+    CHARLIT         reduce using rule 33 (AddOp -> ADD .)
 
 
-state 64
+state 73
 
     (34) AddOp -> SUB .
 
     SUB             reduce using rule 34 (AddOp -> SUB .)
     EXC             reduce using rule 34 (AddOp -> SUB .)
+    (               reduce using rule 34 (AddOp -> SUB .)
     ID              reduce using rule 34 (AddOp -> SUB .)
     INTLIT          reduce using rule 34 (AddOp -> SUB .)
-    (               reduce using rule 34 (AddOp -> SUB .)
-    INT_TYPE        reduce using rule 34 (AddOp -> SUB .)
-    BOOL_TYPE       reduce using rule 34 (AddOp -> SUB .)
-    FLOAT_TYPE      reduce using rule 34 (AddOp -> SUB .)
-    CHAR_TYPE       reduce using rule 34 (AddOp -> SUB .)
+    FLOATLIT        reduce using rule 34 (AddOp -> SUB .)
+    TRUE            reduce using rule 34 (AddOp -> SUB .)
+    FALSE           reduce using rule 34 (AddOp -> SUB .)
+    CHARLIT         reduce using rule 34 (AddOp -> SUB .)
 
 
-state 65
+state 74
 
     (38) Term -> Term MulOp . Factor
     (43) Factor -> . UnaryOp Primary
     (44) Factor -> . Primary
     (45) UnaryOp -> . SUB
     (46) UnaryOp -> . EXC
-    (47) Primary -> . ID
-    (48) Primary -> . INTLIT
+    (47) Primary -> . Identifier
+    (48) Primary -> . Literal
     (49) Primary -> . ( Expression )
-    (50) Primary -> . Type ( Expression )
-    (5) Type -> . INT_TYPE
-    (6) Type -> . BOOL_TYPE
-    (7) Type -> . FLOAT_TYPE
-    (8) Type -> . CHAR_TYPE
+    (50) Identifier -> . ID
+    (51) Literal -> . Integer
+    (52) Literal -> . Float
+    (53) Literal -> . Boolean
+    (54) Literal -> . Char
+    (55) Integer -> . INTLIT
+    (58) Float -> . FLOATLIT
+    (56) Boolean -> . TRUE
+    (57) Boolean -> . FALSE
+    (59) Char -> . CHARLIT
 
-    SUB             shift and go to state 43
-    EXC             shift and go to state 44
-    ID              shift and go to state 33
-    INTLIT          shift and go to state 45
-    (               shift and go to state 46
-    INT_TYPE        shift and go to state 3
-    BOOL_TYPE       shift and go to state 4
-    FLOAT_TYPE      shift and go to state 5
-    CHAR_TYPE       shift and go to state 6
+    SUB             shift and go to state 44
+    EXC             shift and go to state 45
+    (               shift and go to state 47
+    ID              shift and go to state 8
+    INTLIT          shift and go to state 52
+    FLOATLIT        shift and go to state 53
+    TRUE            shift and go to state 54
+    FALSE           shift and go to state 55
+    CHARLIT         shift and go to state 56
 
-    Factor                         shift and go to state 79
-    UnaryOp                        shift and go to state 41
-    Primary                        shift and go to state 42
-    Type                           shift and go to state 47
+    Factor                         shift and go to state 87
+    UnaryOp                        shift and go to state 42
+    Primary                        shift and go to state 43
+    Identifier                     shift and go to state 34
+    Literal                        shift and go to state 46
+    Integer                        shift and go to state 48
+    Float                          shift and go to state 49
+    Boolean                        shift and go to state 50
+    Char                           shift and go to state 51
 
-state 66
+state 75
 
     (40) MulOp -> MUL .
 
     SUB             reduce using rule 40 (MulOp -> MUL .)
     EXC             reduce using rule 40 (MulOp -> MUL .)
+    (               reduce using rule 40 (MulOp -> MUL .)
     ID              reduce using rule 40 (MulOp -> MUL .)
     INTLIT          reduce using rule 40 (MulOp -> MUL .)
-    (               reduce using rule 40 (MulOp -> MUL .)
-    INT_TYPE        reduce using rule 40 (MulOp -> MUL .)
-    BOOL_TYPE       reduce using rule 40 (MulOp -> MUL .)
-    FLOAT_TYPE      reduce using rule 40 (MulOp -> MUL .)
-    CHAR_TYPE       reduce using rule 40 (MulOp -> MUL .)
+    FLOATLIT        reduce using rule 40 (MulOp -> MUL .)
+    TRUE            reduce using rule 40 (MulOp -> MUL .)
+    FALSE           reduce using rule 40 (MulOp -> MUL .)
+    CHARLIT         reduce using rule 40 (MulOp -> MUL .)
 
 
-state 67
+state 76
 
     (41) MulOp -> DIV .
 
     SUB             reduce using rule 41 (MulOp -> DIV .)
     EXC             reduce using rule 41 (MulOp -> DIV .)
+    (               reduce using rule 41 (MulOp -> DIV .)
     ID              reduce using rule 41 (MulOp -> DIV .)
     INTLIT          reduce using rule 41 (MulOp -> DIV .)
-    (               reduce using rule 41 (MulOp -> DIV .)
-    INT_TYPE        reduce using rule 41 (MulOp -> DIV .)
-    BOOL_TYPE       reduce using rule 41 (MulOp -> DIV .)
-    FLOAT_TYPE      reduce using rule 41 (MulOp -> DIV .)
-    CHAR_TYPE       reduce using rule 41 (MulOp -> DIV .)
+    FLOATLIT        reduce using rule 41 (MulOp -> DIV .)
+    TRUE            reduce using rule 41 (MulOp -> DIV .)
+    FALSE           reduce using rule 41 (MulOp -> DIV .)
+    CHARLIT         reduce using rule 41 (MulOp -> DIV .)
 
 
-state 68
+state 77
 
     (42) MulOp -> MOD .
 
     SUB             reduce using rule 42 (MulOp -> MOD .)
     EXC             reduce using rule 42 (MulOp -> MOD .)
+    (               reduce using rule 42 (MulOp -> MOD .)
     ID              reduce using rule 42 (MulOp -> MOD .)
     INTLIT          reduce using rule 42 (MulOp -> MOD .)
-    (               reduce using rule 42 (MulOp -> MOD .)
-    INT_TYPE        reduce using rule 42 (MulOp -> MOD .)
-    BOOL_TYPE       reduce using rule 42 (MulOp -> MOD .)
-    FLOAT_TYPE      reduce using rule 42 (MulOp -> MOD .)
-    CHAR_TYPE       reduce using rule 42 (MulOp -> MOD .)
+    FLOATLIT        reduce using rule 42 (MulOp -> MOD .)
+    TRUE            reduce using rule 42 (MulOp -> MOD .)
+    FALSE           reduce using rule 42 (MulOp -> MOD .)
+    CHARLIT         reduce using rule 42 (MulOp -> MOD .)
 
 
-state 69
+state 78
 
     (43) Factor -> UnaryOp Primary .
 
@@ -1388,65 +1731,16 @@ state 69
     )               reduce using rule 43 (Factor -> UnaryOp Primary .)
 
 
-state 70
+state 79
 
     (49) Primary -> ( Expression . )
     (17) Expression -> Expression . OR Conjunction
 
-    )               shift and go to state 80
-    OR              shift and go to state 52
+    )               shift and go to state 88
+    OR              shift and go to state 61
 
 
-state 71
-
-    (50) Primary -> Type ( . Expression )
-    (17) Expression -> . Expression OR Conjunction
-    (18) Expression -> . Conjunction
-    (19) Conjunction -> . Conjunction AND Equality
-    (20) Conjunction -> . Equality
-    (21) Equality -> . Relation
-    (22) Equality -> . Relation EquOp Relation
-    (25) Relation -> . Addition
-    (26) Relation -> . Addition RelOp Addition
-    (31) Addition -> . Addition AddOp Term
-    (32) Addition -> . Term
-    (38) Term -> . Term MulOp Factor
-    (39) Term -> . Factor
-    (43) Factor -> . UnaryOp Primary
-    (44) Factor -> . Primary
-    (45) UnaryOp -> . SUB
-    (46) UnaryOp -> . EXC
-    (47) Primary -> . ID
-    (48) Primary -> . INTLIT
-    (49) Primary -> . ( Expression )
-    (50) Primary -> . Type ( Expression )
-    (5) Type -> . INT_TYPE
-    (6) Type -> . BOOL_TYPE
-    (7) Type -> . FLOAT_TYPE
-    (8) Type -> . CHAR_TYPE
-
-    SUB             shift and go to state 43
-    EXC             shift and go to state 44
-    ID              shift and go to state 33
-    INTLIT          shift and go to state 45
-    (               shift and go to state 46
-    INT_TYPE        shift and go to state 3
-    BOOL_TYPE       shift and go to state 4
-    FLOAT_TYPE      shift and go to state 5
-    CHAR_TYPE       shift and go to state 6
-
-    Type                           shift and go to state 47
-    Expression                     shift and go to state 81
-    Conjunction                    shift and go to state 35
-    Equality                       shift and go to state 36
-    Relation                       shift and go to state 37
-    Addition                       shift and go to state 38
-    Term                           shift and go to state 39
-    Factor                         shift and go to state 40
-    UnaryOp                        shift and go to state 41
-    Primary                        shift and go to state 42
-
-state 72
+state 80
 
     (35) IfStatement -> IF ( Expression ) . Statement
     (36) IfStatement -> IF ( Expression ) . Statement ELSE Statement
@@ -1455,23 +1749,25 @@ state 72
     (14) Statement -> . IfStatement
     (15) Statement -> . WhileStatement
     (9) Block -> . { Statements }
-    (16) Assignment -> . ID = Expression ;
+    (16) Assignment -> . Identifier = Expression ;
     (35) IfStatement -> . IF ( Expression ) Statement
     (36) IfStatement -> . IF ( Expression ) Statement ELSE Statement
     (37) WhileStatement -> . WHILE ( Expression ) Statement
+    (50) Identifier -> . ID
 
-    {               shift and go to state 16
-    ID              shift and go to state 15
-    IF              shift and go to state 24
-    WHILE           shift and go to state 25
+    {               shift and go to state 17
+    IF              shift and go to state 25
+    WHILE           shift and go to state 26
+    ID              shift and go to state 8
 
-    Statement                      shift and go to state 82
-    Block                          shift and go to state 20
-    Assignment                     shift and go to state 21
-    IfStatement                    shift and go to state 22
-    WhileStatement                 shift and go to state 23
+    Statement                      shift and go to state 89
+    Block                          shift and go to state 21
+    Assignment                     shift and go to state 22
+    IfStatement                    shift and go to state 23
+    WhileStatement                 shift and go to state 24
+    Identifier                     shift and go to state 16
 
-state 73
+state 81
 
     (37) WhileStatement -> WHILE ( Expression ) . Statement
     (12) Statement -> . Block
@@ -1479,23 +1775,25 @@ state 73
     (14) Statement -> . IfStatement
     (15) Statement -> . WhileStatement
     (9) Block -> . { Statements }
-    (16) Assignment -> . ID = Expression ;
+    (16) Assignment -> . Identifier = Expression ;
     (35) IfStatement -> . IF ( Expression ) Statement
     (36) IfStatement -> . IF ( Expression ) Statement ELSE Statement
     (37) WhileStatement -> . WHILE ( Expression ) Statement
+    (50) Identifier -> . ID
 
-    {               shift and go to state 16
-    ID              shift and go to state 15
-    IF              shift and go to state 24
-    WHILE           shift and go to state 25
+    {               shift and go to state 17
+    IF              shift and go to state 25
+    WHILE           shift and go to state 26
+    ID              shift and go to state 8
 
-    Statement                      shift and go to state 83
-    Block                          shift and go to state 20
-    Assignment                     shift and go to state 21
-    IfStatement                    shift and go to state 22
-    WhileStatement                 shift and go to state 23
+    Statement                      shift and go to state 90
+    Block                          shift and go to state 21
+    Assignment                     shift and go to state 22
+    IfStatement                    shift and go to state 23
+    WhileStatement                 shift and go to state 24
+    Identifier                     shift and go to state 16
 
-state 74
+state 82
 
     (17) Expression -> Expression OR Conjunction .
     (19) Conjunction -> Conjunction . AND Equality
@@ -1503,10 +1801,10 @@ state 74
     ;               reduce using rule 17 (Expression -> Expression OR Conjunction .)
     OR              reduce using rule 17 (Expression -> Expression OR Conjunction .)
     )               reduce using rule 17 (Expression -> Expression OR Conjunction .)
-    AND             shift and go to state 53
+    AND             shift and go to state 62
 
 
-state 75
+state 83
 
     (19) Conjunction -> Conjunction AND Equality .
 
@@ -1516,17 +1814,17 @@ state 75
     )               reduce using rule 19 (Conjunction -> Conjunction AND Equality .)
 
 
-state 76
+state 84
 
-    (22) Equality -> Relation EquOp Relation .
+    (21) Equality -> Relation EquOp Relation .
 
-    AND             reduce using rule 22 (Equality -> Relation EquOp Relation .)
-    ;               reduce using rule 22 (Equality -> Relation EquOp Relation .)
-    OR              reduce using rule 22 (Equality -> Relation EquOp Relation .)
-    )               reduce using rule 22 (Equality -> Relation EquOp Relation .)
+    AND             reduce using rule 21 (Equality -> Relation EquOp Relation .)
+    ;               reduce using rule 21 (Equality -> Relation EquOp Relation .)
+    OR              reduce using rule 21 (Equality -> Relation EquOp Relation .)
+    )               reduce using rule 21 (Equality -> Relation EquOp Relation .)
 
 
-state 77
+state 85
 
     (26) Relation -> Addition RelOp Addition .
     (31) Addition -> Addition . AddOp Term
@@ -1539,12 +1837,12 @@ state 77
     ;               reduce using rule 26 (Relation -> Addition RelOp Addition .)
     OR              reduce using rule 26 (Relation -> Addition RelOp Addition .)
     )               reduce using rule 26 (Relation -> Addition RelOp Addition .)
-    ADD             shift and go to state 63
-    SUB             shift and go to state 64
+    ADD             shift and go to state 72
+    SUB             shift and go to state 73
 
-    AddOp                          shift and go to state 58
+    AddOp                          shift and go to state 67
 
-state 78
+state 86
 
     (31) Addition -> Addition AddOp Term .
     (38) Term -> Term . MulOp Factor
@@ -1564,13 +1862,13 @@ state 78
     ;               reduce using rule 31 (Addition -> Addition AddOp Term .)
     OR              reduce using rule 31 (Addition -> Addition AddOp Term .)
     )               reduce using rule 31 (Addition -> Addition AddOp Term .)
-    MUL             shift and go to state 66
-    DIV             shift and go to state 67
-    MOD             shift and go to state 68
+    MUL             shift and go to state 75
+    DIV             shift and go to state 76
+    MOD             shift and go to state 77
 
-    MulOp                          shift and go to state 65
+    MulOp                          shift and go to state 74
 
-state 79
+state 87
 
     (38) Term -> Term MulOp Factor .
 
@@ -1591,7 +1889,7 @@ state 79
     )               reduce using rule 38 (Term -> Term MulOp Factor .)
 
 
-state 80
+state 88
 
     (49) Primary -> ( Expression ) .
 
@@ -1612,16 +1910,7 @@ state 80
     )               reduce using rule 49 (Primary -> ( Expression ) .)
 
 
-state 81
-
-    (50) Primary -> Type ( Expression . )
-    (17) Expression -> Expression . OR Conjunction
-
-    )               shift and go to state 84
-    OR              shift and go to state 52
-
-
-state 82
+state 89
 
     (35) IfStatement -> IF ( Expression ) Statement .
     (36) IfStatement -> IF ( Expression ) Statement . ELSE Statement
@@ -1629,48 +1918,27 @@ state 82
   ! shift/reduce conflict for ELSE resolved as shift
     }               reduce using rule 35 (IfStatement -> IF ( Expression ) Statement .)
     {               reduce using rule 35 (IfStatement -> IF ( Expression ) Statement .)
-    ID              reduce using rule 35 (IfStatement -> IF ( Expression ) Statement .)
     IF              reduce using rule 35 (IfStatement -> IF ( Expression ) Statement .)
     WHILE           reduce using rule 35 (IfStatement -> IF ( Expression ) Statement .)
-    ELSE            shift and go to state 85
+    ID              reduce using rule 35 (IfStatement -> IF ( Expression ) Statement .)
+    ELSE            shift and go to state 91
 
   ! ELSE            [ reduce using rule 35 (IfStatement -> IF ( Expression ) Statement .) ]
 
 
-state 83
+state 90
 
     (37) WhileStatement -> WHILE ( Expression ) Statement .
 
     }               reduce using rule 37 (WhileStatement -> WHILE ( Expression ) Statement .)
     {               reduce using rule 37 (WhileStatement -> WHILE ( Expression ) Statement .)
-    ID              reduce using rule 37 (WhileStatement -> WHILE ( Expression ) Statement .)
     IF              reduce using rule 37 (WhileStatement -> WHILE ( Expression ) Statement .)
     WHILE           reduce using rule 37 (WhileStatement -> WHILE ( Expression ) Statement .)
+    ID              reduce using rule 37 (WhileStatement -> WHILE ( Expression ) Statement .)
     ELSE            reduce using rule 37 (WhileStatement -> WHILE ( Expression ) Statement .)
 
 
-state 84
-
-    (50) Primary -> Type ( Expression ) .
-
-    MUL             reduce using rule 50 (Primary -> Type ( Expression ) .)
-    DIV             reduce using rule 50 (Primary -> Type ( Expression ) .)
-    MOD             reduce using rule 50 (Primary -> Type ( Expression ) .)
-    G               reduce using rule 50 (Primary -> Type ( Expression ) .)
-    GE              reduce using rule 50 (Primary -> Type ( Expression ) .)
-    L               reduce using rule 50 (Primary -> Type ( Expression ) .)
-    LE              reduce using rule 50 (Primary -> Type ( Expression ) .)
-    ADD             reduce using rule 50 (Primary -> Type ( Expression ) .)
-    SUB             reduce using rule 50 (Primary -> Type ( Expression ) .)
-    EQ              reduce using rule 50 (Primary -> Type ( Expression ) .)
-    DIF             reduce using rule 50 (Primary -> Type ( Expression ) .)
-    AND             reduce using rule 50 (Primary -> Type ( Expression ) .)
-    ;               reduce using rule 50 (Primary -> Type ( Expression ) .)
-    OR              reduce using rule 50 (Primary -> Type ( Expression ) .)
-    )               reduce using rule 50 (Primary -> Type ( Expression ) .)
-
-
-state 85
+state 91
 
     (36) IfStatement -> IF ( Expression ) Statement ELSE . Statement
     (12) Statement -> . Block
@@ -1678,34 +1946,36 @@ state 85
     (14) Statement -> . IfStatement
     (15) Statement -> . WhileStatement
     (9) Block -> . { Statements }
-    (16) Assignment -> . ID = Expression ;
+    (16) Assignment -> . Identifier = Expression ;
     (35) IfStatement -> . IF ( Expression ) Statement
     (36) IfStatement -> . IF ( Expression ) Statement ELSE Statement
     (37) WhileStatement -> . WHILE ( Expression ) Statement
+    (50) Identifier -> . ID
 
-    {               shift and go to state 16
-    ID              shift and go to state 15
-    IF              shift and go to state 24
-    WHILE           shift and go to state 25
+    {               shift and go to state 17
+    IF              shift and go to state 25
+    WHILE           shift and go to state 26
+    ID              shift and go to state 8
 
-    Statement                      shift and go to state 86
-    Block                          shift and go to state 20
-    Assignment                     shift and go to state 21
-    IfStatement                    shift and go to state 22
-    WhileStatement                 shift and go to state 23
+    Statement                      shift and go to state 92
+    Block                          shift and go to state 21
+    Assignment                     shift and go to state 22
+    IfStatement                    shift and go to state 23
+    WhileStatement                 shift and go to state 24
+    Identifier                     shift and go to state 16
 
-state 86
+state 92
 
     (36) IfStatement -> IF ( Expression ) Statement ELSE Statement .
 
     }               reduce using rule 36 (IfStatement -> IF ( Expression ) Statement ELSE Statement .)
     {               reduce using rule 36 (IfStatement -> IF ( Expression ) Statement ELSE Statement .)
-    ID              reduce using rule 36 (IfStatement -> IF ( Expression ) Statement ELSE Statement .)
     IF              reduce using rule 36 (IfStatement -> IF ( Expression ) Statement ELSE Statement .)
     WHILE           reduce using rule 36 (IfStatement -> IF ( Expression ) Statement ELSE Statement .)
+    ID              reduce using rule 36 (IfStatement -> IF ( Expression ) Statement ELSE Statement .)
     ELSE            reduce using rule 36 (IfStatement -> IF ( Expression ) Statement ELSE Statement .)
 
 WARNING: 
 WARNING: Conflicts:
 WARNING: 
-WARNING: shift/reduce conflict for ELSE in state 82 resolved as shift
+WARNING: shift/reduce conflict for ELSE in state 89 resolved as shift
