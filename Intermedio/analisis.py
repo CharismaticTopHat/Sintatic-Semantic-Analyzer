@@ -1,7 +1,7 @@
 # %%
 import ply.lex as lex
 import ply.yacc as yacc
-from arbol import (Literal, BinaryOp, Program, Assignment,
+from arbol import (Literal, BinaryOp, UnaryOp, Program, Assignment,
                    Declaration, Declarations, IfStatement, WhileStatement, Variable, Block)
 
 reserved_words = {
@@ -17,10 +17,25 @@ reserved_words = {
 tokens = ['ID', 'INTLIT', 
           'INT_TYPE', 'BOOL_TYPE', 'FLOAT_TYPE', 'CHAR_TYPE', 
           'IF', 'ELSE', 'WHILE',
-          'OR']
+          'OR', 'AND', 'EQ', 'DIF',
+          'G', 'GE','L','LE',
+          'ADD','SUB','MUL','DIV','MOD','EXC']
 t_OR=r'\|\|'
+t_AND=r'\&\&'
+t_EQ=r'\=\='
+t_DIF=r'\!\='
+t_GE = r'>='
+t_G  = r'>'
+t_LE = r'<='
+t_L  = r'<'
+t_ADD = r'\+'
+t_SUB = r'-'
+t_MUL = r'\*'
+t_DIV = r'/'
+t_MOD = r'%'
+t_EXC = '!'
 t_ignore = ' \t'
-literals = '+-*/%(){},;='
+literals = '(){},;='
 
 def t_ID(t):
     r'[a-zA-Z_][a-zA-Z_0-9]*'
@@ -112,6 +127,69 @@ def p_Expression(p):
     else:
         p[0] = BinaryOp(p[2], p[1], p[3])
 
+def p_Conjunction(p):
+    """
+    Conjunction : Conjunction AND Equality
+                | Equality
+    """
+    if len(p) == 2:
+        p[0] = p[1]
+    else:
+        p[0] = BinaryOp(p[2], p[1], p[3])
+
+def p_Equality(p):
+    """
+    Equality : Relation
+             | Relation EquOp Relation
+    """
+    if len(p) == 2:
+        p[0] = p[1]
+    else:
+        p[0] = BinaryOp(p[2], p[1], p[3])
+
+def p_EquOp(p):
+    """
+    EquOp : EQ
+          | DIF
+    """
+    p[0] = p[1]
+
+def p_Relation(p):
+    """
+    Relation : Addition
+             | Addition RelOp Addition
+    """
+    if len(p) == 2:
+        p[0] = p[1]
+    else:
+        p[0] = BinaryOp(p[2], p[1], p[3])
+
+def p_RelOp(p):
+    """
+    RelOp : G
+          | GE
+          | L
+          | LE
+    """
+    p[0] = p[1]
+
+def p_Addition(p):
+    """
+    Addition : Addition AddOp Term
+             | Term
+    """
+    if len(p) == 2:
+        p[0] = p[1]
+    else:
+        p[0] = BinaryOp(p[2], p[1], p[3])
+
+def p_AddOp(p):
+    """
+    AddOp : ADD
+          | SUB
+    """
+    p[0] = p[1]
+
 def p_IfStatement(p):
     """
     IfStatement : IF '(' Expression ')' Statement 
@@ -130,9 +208,7 @@ def p_WhileStatement(p):
 
 def p_Term(p):
     """
-    Term : Term '*' Factor
-         | Term '/' Factor
-         | Term '%' Factor
+    Term : Term MulOp Factor
          | Factor
     """
     if len(p) == 2:
@@ -140,24 +216,53 @@ def p_Term(p):
     else:
         p[0] = BinaryOp(p[2], p[1], p[3])
 
+def p_MulOp(p):
+    """
+    MulOp : MUL
+          | DIV
+          | MOD
+    """
+    p[0] = p[1]
+
 def p_Factor(p):
     """
-    Factor : INTLIT
-           | ID
-           | '(' Expression ')'
+    Factor : UnaryOp Primary
+           | Primary
+    """
+    if len(p) == 2:
+        p[0] = p[1]
+    else:
+        p[0] = UnaryOp(p[1], p[2])
+
+def p_UnaryOp(p):
+    """
+    UnaryOp : SUB
+            | EXC
+    """
+    p[0] = p[1]
+
+def p_Primary(p):
+    """
+    Primary : ID
+            | INTLIT
+            | '(' Expression ')'
+            | Type '(' Expression ')'
     """
     if len(p) == 2:
         if isinstance(p[1], int):
             p[0] = Literal(p[1], 'INT')
         else:
             p[0] = Variable(p[1], 'ID')
-    else:
+    elif len(p) == 4:
         p[0] = p[2]
+    else:
+        p[0] = p[3]
+
 def p_error(p):
     print("Syntax error in input!", p)
 
 lexer  = lex.lex()
-parser = yacc.yacc(write_tables=False, debug=False)
+parser = yacc.yacc()
 
 # %%
 from arbol import Visitor, Variable
@@ -201,7 +306,7 @@ class IRGenerator(Visitor):
         node.decl.accept(self)
 
     def visit_assignment(self, node: Assignment) -> None:
-        node.expression.accept(self)
+        node.assignment.accept(self)
         tmp = self.stack.pop()
         if node.variable not in self.symbol_table:
             raise KeyError(f"Undeclared variable: {node.variable}")
@@ -218,6 +323,19 @@ class IRGenerator(Visitor):
         for stmt in node.stmts:
             stmt.accept(self)
 
+    def visit_unary_op(self, node: UnaryOp) -> None:
+        node.operand.accept(self)
+
+        operand = self.stack.pop()
+
+        if node.op == '-':
+            self.stack.append(builder.neg(operand))
+
+        elif node.op == '!':
+            zero = ir.Constant(operand.type, 0)
+            result = builder.icmp_signed('==', operand, zero)
+            self.stack.append(result)
+
     def visit_binary_op(self, node: BinaryOp) -> None:
         node.lhs.accept(self)
         node.rhs.accept(self)
@@ -233,7 +351,23 @@ class IRGenerator(Visitor):
             self.stack.append(builder.sdiv(lhs,rhs))
         elif node.op == "%":
             self.stack.append(builder.srem(lhs, rhs))
-    
+        elif node.op == '==':
+            self.stack.append(builder.icmp_signed('==', lhs, rhs))
+        elif node.op == '!=':
+            self.stack.append(builder.icmp_signed('!=', lhs, rhs))
+        elif node.op == '<':
+            self.stack.append(builder.icmp_signed('<', lhs, rhs))
+        elif node.op == '<=':
+            self.stack.append(builder.icmp_signed('<=', lhs, rhs))
+        elif node.op == '>':
+            self.stack.append(builder.icmp_signed('>', lhs, rhs))
+        elif node.op == '>=':
+            self.stack.append(builder.icmp_signed('>=', lhs, rhs))
+        elif node.op == '&&':
+            self.stack.append(builder.and_(lhs, rhs))
+        elif node.op == '||':
+            self.stack.append(builder.or_(lhs, rhs))
+            
     def visit_while_statement(self, node: WhileStatement) -> None:
         cond_block  = func.append_basic_block('while_cond')
         body_block  = func.append_basic_block('while_body')
@@ -265,8 +399,7 @@ class IRGenerator(Visitor):
             builder.cbranch(cond_bool, then_block, merge_block)
 
             builder.position_at_end(then_block)
-            for stmt in node.then_stmt:
-                stmt.accept(self)
+            node.then_stmt.accept(self)
             builder.branch(merge_block)
 
             builder.position_at_end(merge_block)
@@ -278,8 +411,7 @@ class IRGenerator(Visitor):
             builder.cbranch(cond_bool, then_block, else_block)
 
             builder.position_at_end(then_block)
-            for stmt in node.then_stmt:
-                stmt.accept(self)
+            node.then_stmt.accept(self)
             builder.branch(merge_block)
 
             builder.position_at_end(else_block)
@@ -294,15 +426,40 @@ int main()
 {
     int a;
     int b;
+    int c;
+    int d;
 
     a = 10;
-    b = 0;
+    b = 5;
+    c = 2;
+    d = 0;
 
-    while (a)
+    d = a + b * c;
+    d = (a - b) / c;
+    d = a % c;
+
+    if (a > b)
     {
-        b = b + 1;
-        a = a - 1;
+        d = 1;
     }
+
+    if (a >= b && b != c)
+    {
+        d = d + 1;
+    }
+
+    if (a < b || c == 2)
+    {
+        d = d + 2;
+    }
+
+    while (a > 0)
+    {
+        a = a - 1;
+        d = d + 1;
+    }
+
+    d = -a;
 }
 """
 

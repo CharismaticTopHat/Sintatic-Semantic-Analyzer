@@ -29,12 +29,6 @@ class Assignment(ASTNode):
     def __str__(self):
         return f"Assignment(var={self.variable}, expr={self.assignment})"
 
-    def accept(self, visitor: Visitor):
-        visitor.visit_expression(self)
-
-    def __str__(self):
-        return f"Assignment(var={self.variable}, expr={self.expression})"
-
 class IfStatement(ASTNode):
     def __init__(self, condition: ASTNode, then_stmt: ASTNode, else_stmt: ASTNode) -> None:
         self.condition = condition
@@ -111,6 +105,17 @@ class Block(ASTNode):
 
     def __str__(self):
         return f"Block(stmts={self.stmts})"
+    
+class UnaryOp(ASTNode):
+    def __init__(self, op: str, operand: ASTNode):
+        self.op = op
+        self.operand = operand
+
+    def accept(self, visitor):
+        visitor.visit_unary_op(self)
+
+    def __str__(self):
+        return f"[{self.op}, {self.operand}]"
 
 class BinaryOp(ASTNode):
     def __init__(self, op: str, lhs: ASTNode, rhs: ASTNode) -> None:
