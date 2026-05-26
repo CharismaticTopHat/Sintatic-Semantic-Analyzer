@@ -6,6 +6,8 @@ from arbol import (Literal, BinaryOp, UnaryOp, Program, Assignment, Parameter, F
                    IfStatement, WhileStatement, SwitchStatement, 
                    Case,Variable, Block)
 
+# Tokens
+
 reserved_words = {
     'int':   'INT_TYPE',
     'bool':  'BOOL_TYPE',
@@ -50,6 +52,8 @@ t_EXC = '!'
 t_ignore = ' \t'
 literals = '(){},;=:'
 
+# 
+
 def t_FLOATLIT(t):
     r'\d+\.\d+'
     t.value = float(t.value)
@@ -77,6 +81,8 @@ def t_newline(t):
 def t_error(t):
     print(f"Illegal character '{t.value[0]}'")
     t.lexer.skip(1)
+
+# Statements, Declarations & Programs
 
 def p_Program(p):
     """
@@ -143,6 +149,8 @@ def p_Assignment(p):
     Assignment : Identifier '=' Expression ';'
     """
     p[0] = Assignment(p[1].name, p[3])
+
+# Operators
 
 def p_Expression(p):
     """
@@ -312,6 +320,8 @@ def p_Primary(p):
     else:
         p[0] = p[2]
 
+# Declarations
+
 def p_Identifier(p):
     """
     Identifier : ID
@@ -351,6 +361,8 @@ def p_Char(p):
     Char : CHARLIT
     """
     p[0] = Literal(p[1], 'CHAR')
+
+# Functions
 
 def p_FunctionOrGlobal(p):
     """
