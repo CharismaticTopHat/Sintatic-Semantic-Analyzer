@@ -2,7 +2,9 @@
 import ply.lex as lex
 import ply.yacc as yacc
 from arbol import (Literal, BinaryOp, UnaryOp, Program, Assignment, Parameter, Function, Call,
-                   Declaration, Declarations, IfStatement, WhileStatement, Variable, Block)
+                   Declaration, Declarations, 
+                   IfStatement, WhileStatement, SwitchStatement, 
+                   Case,Variable, Block)
 
 reserved_words = {
     'int':   'INT_TYPE',
@@ -15,7 +17,11 @@ reserved_words = {
     'while': 'WHILE',
     'true':  'TRUE',
     'false': 'FALSE',
-    'return':'RETURN'
+    'return':'RETURN',
+    'switch':'SWITCH',
+    'case':  'CASE',
+    'default': 'DEFAULT',
+    'break': 'BREAK'
 }
 
 tokens = ['ID', 'INTLIT', 'FLOATLIT', 'CHARLIT',
@@ -24,7 +30,8 @@ tokens = ['ID', 'INTLIT', 'FLOATLIT', 'CHARLIT',
           'OR', 'AND', 'EQ', 'DIF',
           'G', 'GE','L','LE',
           'ADD','SUB','MUL','DIV','MOD','EXC',
-          'TRUE','FALSE','RETURN']
+          'TRUE','FALSE','RETURN',
+          'SWITCH','CASE','DEFAULT','BREAK']
 
 t_OR=r'\|\|'
 t_AND=r'\&\&'
@@ -41,7 +48,7 @@ t_DIV = r'/'
 t_MOD = r'%'
 t_EXC = '!'
 t_ignore = ' \t'
-literals = '(){},;='
+literals = '(){},;=:'
 
 def t_FLOATLIT(t):
     r'\d+\.\d+'
@@ -127,6 +134,7 @@ def p_Statement(p):
               | WhileStatement
               | CallStatement
               | ReturnStatement
+              | SwitchStatement
     """
     p[0] = p[1]
 
@@ -224,6 +232,38 @@ def p_WhileStatement(p):
     WhileStatement : WHILE '(' Expression ')' Statement
     """
     p[0] = WhileStatement(p[3], p[5])
+
+def p_SwitchStatement(p):
+    """
+    SwitchStatement : SWITCH '(' Expression ')' '{' CaseList DefaultCase '}'
+    """
+    p[0] = SwitchStatement(p[3], p[6], p[7])
+
+def p_CaseList(p):
+    """
+    CaseList : CaseList Case
+             | Case
+    """
+    if len(p) == 2:
+        p[0] = [p[1]]
+    else:
+        p[0] = p[1] + [p[2]]
+
+def p_Case(p):
+    """
+    Case : CASE Literal ':' Statements BREAK ';'
+    """
+    p[0] = Case(p[2], p[4])
+
+def p_DefaultCase(p):
+    """
+    DefaultCase : DEFAULT ':' Statements
+                | empty
+    """
+    if p[1] == []:
+        p[0] = None
+    else:
+        p[0] = p[3]
 
 def p_Term(p):
     """
@@ -515,6 +555,9 @@ class IRGenerator(Visitor):
             name=node.name
         )
 
+    def visit_case(self, node):
+        pass
+
     def visit_unary_op(self, node: UnaryOp) -> None:
         node.operand.accept(self)
 
@@ -613,63 +656,76 @@ class IRGenerator(Visitor):
             builder.branch(merge_block)
 
             builder.position_at_end(merge_block)
+    
+    def visit_switch_statement(self, node: SwitchStatement):
+
+        node.expression.accept(self)
+        switch_value = self.stack.pop()
+
+        end_block = func.append_basic_block('switch_end')
+        default_block = func.append_basic_block('default')
+
+        switch_inst = builder.switch(
+            switch_value,
+            default_block
+        )
+
+        case_blocks = []
+
+        for case in node.cases:
+
+            block = func.append_basic_block('case')
+            case_blocks.append((case, block))
+
+            case.value.accept(self)
+            case_value = self.stack.pop()
+
+            switch_inst.add_case(case_value, block)
+
+        for case, block in case_blocks:
+
+            builder.position_at_end(block)
+
+            for stmt in case.stmts:
+                stmt.accept(self)
+
+            builder.branch(end_block)
+
+        builder.position_at_end(default_block)
+
+        if node.default is not None:
+            for stmt in node.default:
+                stmt.accept(self)
+
+        builder.branch(end_block)
+
+        builder.position_at_end(end_block)
 
 data = """
 int main()
 {
-    int a;
-    int b;
-    float c;
-    bool d;
-    char e;
+    int x;
+    int y;
 
-    a = 10;
+    x = 2;
+    y = 0;
 
-    b = 20;
-
-    c = 3.14;
-
-    d = true;
-
-    e = 'z';
-
-    a = 10 + 5;
-
-    b = 20 - 3;
-
-    a = 2 * 5;
-
-    b = 20 / 4;
-
-    a = 17 % 3;
-
-    a = 10 + 5 * 2;
-
-    b = (10 + 5) * 2;
-
-    if (a)
-        b = 1;
-
-    if (a)
-        b = 1;
-    else
-        b = 2;
-
-    if (a)
+    switch (x)
     {
-        a = a + 1;
-        b = b - 1;
-    }
-    else
-    {
-        a = a - 1;
-        b = b + 1;
-    }
+        case 1:
+            y = 10;
+            break;
 
-    while (a)
-    {
-        b = b + 1;
-        a = a - 1;
+        case 2:
+            y = 20;
+            break;
+
+        case 3:
+            y = 30;
+            break;
+
+        default:
+            y = -1;
     }
 }
 """

@@ -52,6 +52,29 @@ class WhileStatement(ASTNode):
     def __str__(self):
         return f"WhileStatement(cond={self.condition}, body={self.body})"
 
+class Case(ASTNode):
+    def __init__(self, value, stmts):
+        self.value = value
+        self.stmts = stmts
+
+    def accept(self, visitor):
+        visitor.visit_case(self)
+
+    def __str__(self):
+        return f"Case(value={self.value}, stmts={self.stmts})"
+
+class SwitchStatement(ASTNode):
+    def __init__(self, expression, cases, default):
+        self.expression = expression
+        self.cases = cases
+        self.default = default
+
+    def accept(self, visitor):
+        visitor.visit_switch_statement(self)
+
+    def __str__(self):
+        return f"Switch(expr={self.expression})"
+
 class Declaration(ASTNode):
     def __init__(self, variable: Any, type: str) -> None:
         self.variable = variable
@@ -212,6 +235,14 @@ class Visitor(ABC):
 
     @abstractmethod
     def visit_function(self, node: Function) -> None:
+        pass
+
+    @abstractmethod
+    def visit_switch_statement(self, node):
+        pass
+
+    @abstractmethod
+    def visit_case(self, node):
         pass
 
 """
