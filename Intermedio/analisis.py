@@ -1,9 +1,9 @@
 # %%
 import ply.lex as lex
 import ply.yacc as yacc
-from arbol import (Literal, BinaryOp, UnaryOp, Program, Assignment, Parameter, Function, Call,
+from arbol import (Literal, BinaryOp, UnaryOp, Program, Assignment, Parameter, Call, Function,
                    Declaration, Declarations, 
-                   IfStatement, WhileStatement, SwitchStatement, 
+                   IfStatement, WhileStatement, SwitchStatement, ReturnStatement, 
                    Case,Variable, Block)
 
 # Tokens
@@ -24,6 +24,7 @@ reserved_words = {
     'case':  'CASE',
     'default':'DEFAULT',
     'break': 'BREAK',
+    'main':  'MAIN'
 }
 
 tokens = ['ID', 'INTLIT', 'FLOATLIT', 'CHARLIT',
@@ -33,7 +34,7 @@ tokens = ['ID', 'INTLIT', 'FLOATLIT', 'CHARLIT',
           'G', 'GE','L','LE',
           'ADD','SUB','MUL','DIV','MOD','EXC',
           'TRUE','FALSE','RETURN',
-          'SWITCH','CASE','DEFAULT','BREAK']
+          'SWITCH','CASE','DEFAULT','BREAK', 'MAIN']
 
 t_OR=r'\|\|'
 t_AND=r'\&\&'
@@ -52,7 +53,10 @@ t_EXC = '!'
 t_ignore = ' \t'
 literals = '(){},;=:'
 
-# 
+precedence = (
+    ('nonassoc', 'IFX'),
+    ('nonassoc', 'ELSE'),
+)
 
 def t_FLOATLIT(t):
     r'\d+\.\d+'
@@ -88,17 +92,31 @@ def p_Program(p):
     """
     Program : FunctionList MainFunction
     """
-    p[0] = p[2] 
+    p[0] = Program(p[1], p[2])
+
+def p_FunctionList(p):
+    """
+    FunctionList : FunctionList Function
+                 | empty
+    """
+    if len(p) == 2:
+        p[0] = p[1]
+    else:
+        p[0] = p[1] + [p[2]]
 
 def p_Declarations(p):
     """
     Declarations : Declarations Declaration
                  | Declaration
+                 | empty
     """
     if len(p) == 2:
-        p[0] = Declarations(None, p[1])
+        if p[1] == []:
+            p[0] = []
+        else:
+            p[0] = [p[1]]
     else:
-        p[0] = Declarations(p[1], p[2])
+        p[0] = p[1] + [p[2]]
 
 def p_Declaration(p):
     """
@@ -118,17 +136,21 @@ def p_Type(p):
 
 def p_Block(p):
     """
-    Block : '{' Statements '}'
+    Block : '{' Declarations Statements '}'
     """
-    p[0] = Block(p[2])
+    p[0] = Block(p[2],p[3])
 
 def p_Statements(p):
     """
     Statements : Statements Statement
                | Statement
+               | empty
     """
     if len(p) == 2:
-        p[0] = [p[1]]
+        if p[1] == []:
+            p[0] = []
+        else:
+            p[0] = [p[1]]
     else:
         p[0] = p[1] + [p[2]]
 
@@ -175,7 +197,7 @@ def p_Conjunction(p):
 def p_Equality(p):
     """
     Equality : Relation EquOp Relation
-            | Relation
+             | Relation
     """
     if len(p) == 2:
         p[0] = p[1]
@@ -227,7 +249,7 @@ def p_AddOp(p):
 
 def p_IfStatement(p):
     """
-    IfStatement : IF '(' Expression ')' Statement 
+    IfStatement : IF '(' Expression ')' Statement %prec IFX
                 | IF '(' Expression ')' Statement ELSE Statement
     """
     if len(p) == 6:
@@ -366,16 +388,38 @@ def p_Char(p):
 
 def p_FunctionOrGlobal(p):
     """
-    FunctionOrGlobal : '(' Parameters ')' '{' Declarations Statements '}'
-                     | '(' ')' '{' Declarations Statements '}'
+    FunctionOrGlobal : '(' Parameters ')' Block
+                     | '(' ')' Block
                      | Global
     """
     if len(p) == 2:
-        p[0] = ('global', p[1])
-    elif len(p) == 8:
-        p[0] = Function('', [], p[4], p[5])
+        p[0] = ("global", p[1])
+    elif len(p) == 4:
+        p[0] = ("function", [], p[3])
     else:
-        p[0] = Function('', p[2], p[5], p[6])
+        p[0] = ("function", p[2], p[4])
+
+def p_Function(p):
+    """
+    Function : Type Identifier FunctionOrGlobal
+    """
+
+    kind = p[3][0]
+
+    if kind == "function":
+
+        params = p[3][1]
+        block  = p[3][2]
+
+        p[0] = Function(
+            p[2].name,
+            params,
+            block.decls,
+            block.stmts
+        )
+
+    else:
+        p[0] = None
 
 def p_Parameters(p):
     """
@@ -399,35 +443,15 @@ def p_Parameter(p):
 
 def p_Global(p):
     """
-    Global : GlobalList ';'
+    Global : ',' Identifier ';'
     """
     p[0] = p[1]
 
-def p_GlobalList(p):
-    """
-    GlobalList : GlobalList ',' Identifier
-               | Identifier
-    """
-    if len(p) == 2:
-        p[0] = [p[1]]
-    else:
-        p[0] = p[1] + [p[3]]
-
-def p_FunctionList(p):
-    """
-    FunctionList : FunctionList Type Identifier FunctionOrGlobal
-                 | empty
-    """
-    if len(p) == 2:
-        p[0] = []
-    else:
-        p[0] = p[1] + [(p[2], p[3], p[4])]
-
 def p_MainFunction(p):
     """
-    MainFunction : INT_TYPE ID '(' ')' '{' Declarations Statements '}'
+    MainFunction : INT_TYPE MAIN '(' ')' Block
     """
-    p[0] = Program(p[6], p[7])
+    p[0] = Function("main",[],p[5].decls,p[5].stmts)
 
 def p_CallStatement(p):
     """
@@ -441,9 +465,9 @@ def p_ReturnStatement(p):
                     | RETURN ';'
     """
     if len(p) == 4:
-        p[0] = ('return', p[2])
+        p[0] = ReturnStatement(p[2])
     else:
-        p[0] = ('return', None)
+        p[0] = ReturnStatement(None)
 
 def p_Call(p):
     """
@@ -505,10 +529,12 @@ class IRGenerator(Visitor):
         self.stack.append(ir.Constant(llvm_type, node.value))
 
     def visit_program(self, node: Program) -> None:
-        node.decls.accept(self)
-        for stmt in node.stmts:
-            stmt.accept(self)
-        builder.ret(ir.Constant(intType, 0))
+        if node.functions:
+            for func in node.functions:
+                if func is not None:
+                    func.accept(self)
+
+        node.main.accept(self)
 
     def visit_declaration(self, node: Declaration) -> None:
         type_map = {
@@ -525,6 +551,17 @@ class IRGenerator(Visitor):
             node.decls.accept(self)
         node.decl.accept(self)
 
+    def visit_function(self, node: Function) -> None:
+
+        for param in node.params:
+            param.accept(self)
+
+        for decl in node.decls:
+            decl.accept(self)
+
+        for stmt in node.stmts:
+            stmt.accept(self)
+
     def visit_assignment(self, node: Assignment) -> None:
         node.assignment.accept(self)
         tmp = self.stack.pop()
@@ -540,14 +577,8 @@ class IRGenerator(Visitor):
         self.stack.append(val)
     
     def visit_block(self, node: Block) -> None:
-        for stmt in node.stmts:
-            stmt.accept(self)
-    
-    def visit_function(self, node: Function) -> None:
-        for param in node.params:
-            param.accept(self)
-
-        node.decls.accept(self)
+        for decl in node.decls:
+            decl.accept(self)
 
         for stmt in node.stmts:
             stmt.accept(self)
@@ -562,9 +593,9 @@ class IRGenerator(Visitor):
 
         llvm_type = type_map.get(node.type, ir.IntType(32))
 
-        self.symbol_table[node.name] = builder.alloca(
+        self.symbol_table[node.variable] = builder.alloca(
             llvm_type,
-            name=node.name
+            name=node.variable
         )
 
     def visit_case(self, node):
@@ -640,10 +671,17 @@ class IRGenerator(Visitor):
 
     def visit_if_statement(self, node: IfStatement) -> None:
         node.condition.accept(self)
+
         cond = self.stack.pop()
-        cond_bool = builder.icmp_signed('!=', cond, ir.Constant(intType, 0))
+
+        cond_bool = builder.icmp_signed(
+            '!=',
+            cond,
+            ir.Constant(intType, 0)
+        )
 
         if node.else_stmt is None:
+
             then_block  = func.append_basic_block('then')
             merge_block = func.append_basic_block('merge')
 
@@ -651,10 +689,14 @@ class IRGenerator(Visitor):
 
             builder.position_at_end(then_block)
             node.then_stmt.accept(self)
-            builder.branch(merge_block)
+
+            if not builder.block.is_terminated:
+                builder.branch(merge_block)
 
             builder.position_at_end(merge_block)
+
         else:
+
             then_block  = func.append_basic_block('then')
             else_block  = func.append_basic_block('else')
             merge_block = func.append_basic_block('merge')
@@ -663,12 +705,15 @@ class IRGenerator(Visitor):
 
             builder.position_at_end(then_block)
             node.then_stmt.accept(self)
-            builder.branch(merge_block)
+
+            if not builder.block.is_terminated:
+                builder.branch(merge_block)
 
             builder.position_at_end(else_block)
-            
             node.else_stmt.accept(self)
-            builder.branch(merge_block)
+
+            if not builder.block.is_terminated:
+                builder.branch(merge_block)
 
             builder.position_at_end(merge_block)
     
@@ -716,6 +761,14 @@ class IRGenerator(Visitor):
 
         builder.position_at_end(end_block)
 
+    def visit_return_statement(self, node):
+        if node.expression is not None:
+            node.expression.accept(self)
+            value = self.stack.pop()
+            builder.ret(value)
+        else:
+            builder.ret_void()
+
 # Fibonacci
 
 data1 = """
@@ -734,9 +787,112 @@ int fibonacci(int n)
 
     return result;
 }
+
+int main()
+{
+    int x;
+    x = fibonacci(5);
+}
 """
 
-root = parser.parse(data1)
+# Factorial
+
+data2 = """
+int factorial(int n)
+{
+    if (n == 0)
+    {
+        return 1;
+    }
+    else
+    {
+        return n * factorial(n - 1);
+    }
+}
+
+int main()
+{
+    int result;
+
+    result = factorial(5);
+}
+"""
+
+# Recursive Sum
+data3 = """
+int sum(int n)
+{
+    if (n == 0)
+    {
+        return 0;
+    }
+    else
+    {
+        return n + sum(n - 1);
+    }
+}
+
+int main()
+{
+    int total;
+
+    total = sum(10);
+}
+"""
+
+# Recursive Power
+
+data4 = """
+int power(int base, int exp)
+{
+    if (exp == 0)
+    {
+        return 1;
+    }
+    else
+    {
+        return base * power(base, exp - 1);
+    }
+}
+
+int main()
+{
+    int result;
+
+    result = power(2, 5);
+}
+"""
+
+# Greatest Common Divisor
+data5 = """
+int gcd(int a, int b)
+{
+    if (a == b)
+    {
+        return a;
+    }
+    else
+    {
+        if (a > b)
+        {
+            return gcd(a - b, b);
+        }
+        else
+        {
+            return gcd(a, b - a);
+        }
+    }
+}
+
+int main()
+{
+    int result;
+
+    result = gcd(48, 18);
+}
+"""
+
+root = parser.parse(data2)
 print(root)
 irgen = IRGenerator()
 root.accept(irgen)
