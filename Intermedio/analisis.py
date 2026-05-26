@@ -1,7 +1,7 @@
 # %%
 import ply.lex as lex
 import ply.yacc as yacc
-from arbol import (Literal, BinaryOp, UnaryOp, Program, Assignment,
+from arbol import (Literal, BinaryOp, UnaryOp, Program, Assignment, Parameter, Function, Call,
                    Declaration, Declarations, IfStatement, WhileStatement, Variable, Block)
 
 reserved_words = {
@@ -9,20 +9,22 @@ reserved_words = {
     'bool':  'BOOL_TYPE',
     'float': 'FLOAT_TYPE',
     'char':  'CHAR_TYPE',
+    'void':  'VOID_TYPE',
     'if':    'IF',
     'else':  'ELSE',
     'while': 'WHILE',
     'true':  'TRUE',
-    'false': 'FALSE'
+    'false': 'FALSE',
+    'return':'RETURN'
 }
 
 tokens = ['ID', 'INTLIT', 'FLOATLIT', 'CHARLIT',
-          'INT_TYPE', 'BOOL_TYPE', 'FLOAT_TYPE', 'CHAR_TYPE', 
+          'INT_TYPE', 'BOOL_TYPE', 'FLOAT_TYPE', 'CHAR_TYPE', 'VOID_TYPE', 
           'IF', 'ELSE', 'WHILE',
           'OR', 'AND', 'EQ', 'DIF',
           'G', 'GE','L','LE',
           'ADD','SUB','MUL','DIV','MOD','EXC',
-          'TRUE','FALSE']
+          'TRUE','FALSE','RETURN']
 
 t_OR=r'\|\|'
 t_AND=r'\&\&'
@@ -71,9 +73,9 @@ def t_error(t):
 
 def p_Program(p):
     """
-    Program : Type Identifier '(' ')' '{' Declarations Statements '}'
+    Program : FunctionList MainFunction
     """
-    p[0] = Program(p[6], p[7])
+    p[0] = p[2] 
 
 def p_Declarations(p):
     """
@@ -97,6 +99,7 @@ def p_Type(p):
          | BOOL_TYPE
          | FLOAT_TYPE
          | CHAR_TYPE
+         | VOID_TYPE
     """
     p[0] = p[1]
 
@@ -122,6 +125,8 @@ def p_Statement(p):
               | Assignment
               | IfStatement
               | WhileStatement
+              | CallStatement
+              | ReturnStatement
     """
     p[0] = p[1]
 
@@ -260,6 +265,7 @@ def p_Primary(p):
     Primary : Identifier
             | Literal
             | '(' Expression ')'
+            | Call
     """
     if len(p) == 2:
         p[0] = p[1]
@@ -305,6 +311,113 @@ def p_Char(p):
     Char : CHARLIT
     """
     p[0] = Literal(p[1], 'CHAR')
+
+def p_FunctionOrGlobal(p):
+    """
+    FunctionOrGlobal : '(' Parameters ')' '{' Declarations Statements '}'
+                     | '(' ')' '{' Declarations Statements '}'
+                     | Global
+    """
+    if len(p) == 2:
+        p[0] = ('global', p[1])
+    elif len(p) == 8:
+        p[0] = Function('', [], p[4], p[5])
+    else:
+        p[0] = Function('', p[2], p[5], p[6])
+
+def p_Parameters(p):
+    """
+    Parameters : Parameters ',' Parameter
+               | Parameter
+               | empty
+    """
+    if len(p) == 2:
+        if p[1] == []:
+            p[0] = []
+        else:
+            p[0] = [p[1]]
+    else:
+        p[0] = p[1] + [p[3]]
+
+def p_Parameter(p):
+    """
+    Parameter : Type Identifier
+    """
+    p[0] = Parameter(p[2].name, p[1])
+
+def p_Global(p):
+    """
+    Global : GlobalList ';'
+    """
+    p[0] = p[1]
+
+def p_GlobalList(p):
+    """
+    GlobalList : GlobalList ',' Identifier
+               | Identifier
+    """
+    if len(p) == 2:
+        p[0] = [p[1]]
+    else:
+        p[0] = p[1] + [p[3]]
+
+def p_FunctionList(p):
+    """
+    FunctionList : FunctionList Type Identifier FunctionOrGlobal
+                 | empty
+    """
+    if len(p) == 2:
+        p[0] = []
+    else:
+        p[0] = p[1] + [(p[2], p[3], p[4])]
+
+def p_MainFunction(p):
+    """
+    MainFunction : INT_TYPE ID '(' ')' '{' Declarations Statements '}'
+    """
+    p[0] = Program(p[6], p[7])
+
+def p_CallStatement(p):
+    """
+    CallStatement : Call ';'
+    """
+    p[0] = p[1]
+
+def p_ReturnStatement(p):
+    """
+    ReturnStatement : RETURN Expression ';'
+                    | RETURN ';'
+    """
+    if len(p) == 4:
+        p[0] = ('return', p[2])
+    else:
+        p[0] = ('return', None)
+
+def p_Call(p):
+    """
+    Call : Identifier '(' Arguments ')'
+    """
+    p[0] = Call(p[1].name, p[3])
+
+def p_Arguments(p):
+    """
+    Arguments : Arguments ',' Expression
+              | Expression
+              | empty
+    """
+    if len(p) == 2:
+        if p[1] == []:
+            p[0] = []
+        else:
+            p[0] = [p[1]]
+    else:
+        p[0] = p[1] + [p[3]]
+
+def p_empty(p):
+    """
+    empty :
+    """
+    p[0] = []
 
 def p_error(p):
     print("Syntax error in input!", p)
@@ -377,6 +490,30 @@ class IRGenerator(Visitor):
     def visit_block(self, node: Block) -> None:
         for stmt in node.stmts:
             stmt.accept(self)
+    
+    def visit_function(self, node: Function) -> None:
+        for param in node.params:
+            param.accept(self)
+
+        node.decls.accept(self)
+
+        for stmt in node.stmts:
+            stmt.accept(self)
+
+    def visit_parameter(self, node: Parameter) -> None:
+        type_map = {
+            'int': ir.IntType(32),
+            'float': ir.FloatType(),
+            'bool': ir.IntType(1),
+            'char': ir.IntType(8),
+        }
+
+        llvm_type = type_map.get(node.type, ir.IntType(32))
+
+        self.symbol_table[node.name] = builder.alloca(
+            llvm_type,
+            name=node.name
+        )
 
     def visit_unary_op(self, node: UnaryOp) -> None:
         node.operand.accept(self)

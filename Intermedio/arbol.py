@@ -105,7 +105,43 @@ class Block(ASTNode):
 
     def __str__(self):
         return f"Block(stmts={self.stmts})"
-    
+
+class Parameter(ASTNode):
+    def __init__(self, variable: str, type: str) -> None:
+        self.variable = variable
+        self.type     = type
+
+    def accept(self, visitor: Visitor):
+        visitor.visit_parameter(self)
+
+    def __str__(self):
+        return f"Parameter(var={self.variable}, type={self.type})"
+
+class Function(ASTNode):
+    def __init__(self, name: str, params: list,
+                 decls: Any, stmts: Any) -> None:
+        self.name   = name
+        self.params = params
+        self.decls  = decls
+        self.stmts  = stmts
+
+    def accept(self, visitor: Visitor):
+        visitor.visit_function(self)
+
+    def __str__(self):
+        return f"Function(name={self.name}, params={self.params})"
+
+class Call(ASTNode):
+    def __init__(self, name: str, args: list) -> None:
+        self.name = name
+        self.args = args
+
+    def accept(self, visitor: Visitor):
+        visitor.visit_call(self)
+
+    def __str__(self):
+        return f"Call(name={self.name}, args={self.args})"
+
 class UnaryOp(ASTNode):
     def __init__(self, op: str, operand: ASTNode):
         self.op = op
@@ -168,6 +204,14 @@ class Visitor(ABC):
 
     @abstractmethod
     def visit_block(self, node: Block) -> None:
+        pass
+
+    @abstractmethod
+    def visit_parameter(self, node: Parameter) -> None:
+        pass
+
+    @abstractmethod
+    def visit_function(self, node: Function) -> None:
         pass
 
 """
