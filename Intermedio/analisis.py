@@ -1,8 +1,8 @@
 # %%
 import ply.lex as lex
 import ply.yacc as yacc
-from arbol import (Literal, BinaryOp, UnaryOp, Program, Assignment, Parameter, Call, Function,
-                   Declaration, Declarations, 
+from arbol import (Literal, BinaryOp, UnaryOp, Program, 
+                   Assignment, Parameter, Call, Function,Declaration, 
                    IfStatement, WhileStatement, SwitchStatement, ReturnStatement, 
                    Case,Variable, Block)
 
@@ -641,18 +641,13 @@ class IRGenerator(Visitor):
     def visit_program(self, node: Program) -> None:
 
         # ---------------------------------------------
-        # FIRST PASS:
-        # CREATE LLVM FUNCTION SIGNATURES
+        # LLVM FUNCTION SIGNATURES
         # ---------------------------------------------
 
         if node.functions:
-
             for func in node.functions:
-
                 if func is not None:
-
                     param_types = []
-
                     for param in func.params:
                         param_types.append(
                             self.get_llvm_type(param.type)
@@ -687,8 +682,7 @@ class IRGenerator(Visitor):
         self.function_table["main"] = llvm_main
 
         # ---------------------------------------------
-        # SECOND PASS:
-        # GENERATE FUNCTION BODIES
+        # FUNCTION BODIES
         # ---------------------------------------------
 
         if node.functions:
@@ -773,6 +767,11 @@ class IRGenerator(Visitor):
             llvm_type,
             name=node.variable
         )
+
+    def visit_declarations(self, node: Declarations) -> None:
+        if node.decls is not None:
+            node.decls.accept(self)
+        node.decl.accept(self)
 
     # =========================================================
     # VARIABLES

@@ -8,16 +8,16 @@ class ASTNode(ABC):
         pass
 
 class Program(ASTNode):
-    def __init__(self, decls: Any, stmts: Any) -> None:
-        self.decls = decls
-        self.stmts = stmts
+    def __init__(self, functions: Any, main: Any) -> None:
+        self.functions = functions
+        self.main = main
 
     def accept(self, visitor: Visitor):
         visitor.visit_program(self)
 
     def __str__(self):
-        return f"Program(decls={self.decls}, stmts={self.stmts})"
-
+        return f"Program(functions={self.functions}, main={self.main})"
+    
 class Assignment(ASTNode):
     def __init__(self, variable: Any, assignment: ASTNode) -> None:
         self.variable   = variable
@@ -75,6 +75,17 @@ class SwitchStatement(ASTNode):
     def __str__(self):
         return f"Switch(expr={self.expression})"
 
+class ReturnStatement(ASTNode):
+
+    def __init__(self, expression) -> None:
+        self.expression = expression
+
+    def accept(self, visitor: Visitor):
+        visitor.visit_return_statement(self)
+
+    def __str__(self):
+        return f"ReturnStatement(expr={self.expression})"
+
 class Declaration(ASTNode):
     def __init__(self, variable: Any, type: str) -> None:
         self.variable = variable
@@ -120,14 +131,16 @@ class Variable(ASTNode):
         return f"[VAR, {self.name}]"
     
 class Block(ASTNode):
-    def __init__(self, stmts: list) -> None:
+
+    def __init__(self, decls, stmts) -> None:
+        self.decls = decls
         self.stmts = stmts
 
     def accept(self, visitor: Visitor):
         visitor.visit_block(self)
 
     def __str__(self):
-        return f"Block(stmts={self.stmts})"
+        return f"Block(decls={self.decls}, stmts={self.stmts})"
 
 class Parameter(ASTNode):
     def __init__(self, variable: str, type: str) -> None:
