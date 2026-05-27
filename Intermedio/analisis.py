@@ -502,230 +502,673 @@ lexer  = lex.lex()
 parser = yacc.yacc()
 
 # %%
-from arbol import Visitor, Variable
+from arbol import (
+    Visitor,
+    Variable,
+    Literal,
+    BinaryOp,
+    UnaryOp,
+    Program,
+    Assignment,
+    Parameter,
+    Call,
+    Function,
+    Declaration,
+    Declarations,
+    IfStatement,
+    WhileStatement,
+    SwitchStatement,
+    ReturnStatement,
+    Case,
+    Block
+)
+
 from llvmlite import ir
 
-intType = ir.IntType(32)
-module  = ir.Module(name="prog")
-
-fnty    = ir.FunctionType(intType, [])
-func    = ir.Function(module, fnty, name='main')
-entry   = func.append_basic_block('entry')
-builder = ir.IRBuilder(entry)
 
 class IRGenerator(Visitor):
-    def __init__(self):
-        self.stack = []
-        self.symbol_table = {}
 
-    def visit_literal(self, node: Literal) -> None:
+    def __init__(self):
+
+        # =====================================================
+        # LLVM MODULE
+        # =====================================================
+
+        self.module = ir.Module(name="prog")
+
+        # =====================================================
+        # COMMON TYPES
+        # =====================================================
+
+        self.intType   = ir.IntType(32)
+        self.boolType  = ir.IntType(1)
+        self.charType  = ir.IntType(8)
+        self.floatType = ir.FloatType()
+        self.voidType  = ir.VoidType()
+
+        # =====================================================
+        # CURRENT STATE
+        # =====================================================
+
+        self.builder = None
+        self.current_function = None
+
+        # =====================================================
+        # SYMBOLS / FUNCTIONS
+        # =====================================================
+
+        self.symbol_table = {}
+        self.function_table = {}
+
+        # =====================================================
+        # EXPRESSION STACK
+        # =====================================================
+
+        self.stack = []
+
+        # =====================================================
+        # printf SUPPORT
+        # =====================================================
+
+        voidptr_ty = ir.IntType(8).as_pointer()
+
+        printf_ty = ir.FunctionType(
+            ir.IntType(32),
+            [voidptr_ty],
+            var_arg=True
+        )
+
+        self.printf = ir.Function(
+            self.module,
+            printf_ty,
+            name="printf"
+        )
+
+    # =========================================================
+    # UTILITY FUNCTIONS
+    # =========================================================
+
+    def get_llvm_type(self, type_name):
+
         type_map = {
-            'INT':   ir.IntType(32),
-            'FLOAT': ir.FloatType(),
-            'BOOL':  ir.IntType(1),
-            'CHAR':  ir.IntType(8),
+            'int': self.intType,
+            'INT': self.intType,
+
+            'bool': self.boolType,
+            'BOOL': self.boolType,
+
+            'char': self.charType,
+            'CHAR': self.charType,
+
+            'float': self.floatType,
+            'FLOAT': self.floatType,
+
+            'void': self.voidType
         }
-        llvm_type = type_map.get(node.type, ir.IntType(32))
-        self.stack.append(ir.Constant(llvm_type, node.value))
+
+        return type_map.get(type_name, self.intType)
+
+    def create_global_string(self, text, name="str"):
+
+        text += '\0'
+
+        string_type = ir.ArrayType(
+            ir.IntType(8),
+            len(text)
+        )
+
+        string_const = ir.Constant(
+            string_type,
+            bytearray(text.encode("utf8"))
+        )
+
+        global_var = ir.GlobalVariable(
+            self.module,
+            string_type,
+            name=name
+        )
+
+        global_var.linkage = 'internal'
+        global_var.global_constant = True
+        global_var.initializer = string_const
+
+        return global_var
+
+    # =========================================================
+    # PROGRAM
+    # =========================================================
 
     def visit_program(self, node: Program) -> None:
+
+        # ---------------------------------------------
+        # FIRST PASS:
+        # CREATE LLVM FUNCTION SIGNATURES
+        # ---------------------------------------------
+
         if node.functions:
+
             for func in node.functions:
+
+                if func is not None:
+
+                    param_types = []
+
+                    for param in func.params:
+                        param_types.append(
+                            self.get_llvm_type(param.type)
+                        )
+
+                    func_type = ir.FunctionType(
+                        self.intType,
+                        param_types
+                    )
+
+                    llvm_func = ir.Function(
+                        self.module,
+                        func_type,
+                        name=func.name
+                    )
+
+                    self.function_table[func.name] = llvm_func
+
+        # MAIN FUNCTION
+
+        main_type = ir.FunctionType(
+            self.intType,
+            []
+        )
+
+        llvm_main = ir.Function(
+            self.module,
+            main_type,
+            name="main"
+        )
+
+        self.function_table["main"] = llvm_main
+
+        # ---------------------------------------------
+        # SECOND PASS:
+        # GENERATE FUNCTION BODIES
+        # ---------------------------------------------
+
+        if node.functions:
+
+            for func in node.functions:
+
                 if func is not None:
                     func.accept(self)
 
         node.main.accept(self)
 
-    def visit_declaration(self, node: Declaration) -> None:
-        type_map = {
-            'int':   ir.IntType(32),
-            'float': ir.FloatType(),
-            'bool':  ir.IntType(1),
-            'char':  ir.IntType(8),
-        }
-        llvm_type = type_map.get(node.type, ir.IntType(32))
-        self.symbol_table[node.variable] = builder.alloca(llvm_type, name=node.variable)
-
-    def visit_declarations(self, node: Declarations) -> None:
-        if node.decls is not None:
-            node.decls.accept(self)
-        node.decl.accept(self)
+    # =========================================================
+    # FUNCTION
+    # =========================================================
 
     def visit_function(self, node: Function) -> None:
 
-        for param in node.params:
-            param.accept(self)
+        llvm_func = self.function_table[node.name]
+
+        self.current_function = llvm_func
+
+        entry_block = llvm_func.append_basic_block('entry')
+
+        self.builder = ir.IRBuilder(entry_block)
+
+        # NEW SYMBOL TABLE PER FUNCTION
+        self.symbol_table = {}
+
+        # ---------------------------------------------
+        # STORE PARAMETERS
+        # ---------------------------------------------
+
+        for i, param in enumerate(node.params):
+
+            llvm_type = self.get_llvm_type(param.type)
+
+            ptr = self.builder.alloca(
+                llvm_type,
+                name=param.variable
+            )
+
+            self.builder.store(
+                llvm_func.args[i],
+                ptr
+            )
+
+            self.symbol_table[param.variable] = ptr
+
+        # ---------------------------------------------
+        # DECLARATIONS
+        # ---------------------------------------------
 
         for decl in node.decls:
             decl.accept(self)
 
-        for stmt in node.stmts:
-            stmt.accept(self)
-
-    def visit_assignment(self, node: Assignment) -> None:
-        node.assignment.accept(self)
-        tmp = self.stack.pop()
-        if node.variable not in self.symbol_table:
-            raise KeyError(f"Undeclared variable: {node.variable}")
-        else:
-            builder.store(tmp, self.symbol_table[node.variable])
-            
-    def visit_variable(self, node: Variable) -> None:
-        if node.name not in self.symbol_table:
-            raise KeyError(f"Undeclared variable: {node.name}")
-        val = builder.load(self.symbol_table[node.name], name=node.name)
-        self.stack.append(val)
-    
-    def visit_block(self, node: Block) -> None:
-        for decl in node.decls:
-            decl.accept(self)
+        # ---------------------------------------------
+        # STATEMENTS
+        # ---------------------------------------------
 
         for stmt in node.stmts:
             stmt.accept(self)
 
-    def visit_parameter(self, node: Parameter) -> None:
-        type_map = {
-            'int': ir.IntType(32),
-            'float': ir.FloatType(),
-            'bool': ir.IntType(1),
-            'char': ir.IntType(8),
-        }
+        # ---------------------------------------------
+        # DEFAULT RETURN
+        # ---------------------------------------------
 
-        llvm_type = type_map.get(node.type, ir.IntType(32))
+        if not self.builder.block.is_terminated:
 
-        self.symbol_table[node.variable] = builder.alloca(
+            self.builder.ret(
+                ir.Constant(self.intType, 0)
+            )
+
+    # =========================================================
+    # DECLARATIONS
+    # =========================================================
+
+    def visit_declaration(self, node: Declaration) -> None:
+
+        llvm_type = self.get_llvm_type(node.type)
+
+        self.symbol_table[node.variable] = self.builder.alloca(
             llvm_type,
             name=node.variable
         )
 
-    def visit_case(self, node):
-        pass
+    # =========================================================
+    # VARIABLES
+    # =========================================================
 
-    def visit_call(self, note):
-        self.stack.append(ir.Constant(intType, 0))
+    def visit_variable(self, node: Variable) -> None:
+
+        if node.name not in self.symbol_table:
+            raise KeyError(f"Undeclared variable: {node.name}")
+
+        value = self.builder.load(
+            self.symbol_table[node.name],
+            name=node.name
+        )
+
+        self.stack.append(value)
+
+    # =========================================================
+    # LITERALS
+    # =========================================================
+
+    def visit_literal(self, node: Literal) -> None:
+
+        llvm_type = self.get_llvm_type(node.type)
+
+        constant = ir.Constant(
+            llvm_type,
+            node.value
+        )
+
+        self.stack.append(constant)
+
+    # =========================================================
+    # ASSIGNMENT
+    # =========================================================
+
+    def visit_assignment(self, node: Assignment) -> None:
+
+        node.assignment.accept(self)
+
+        value = self.stack.pop()
+
+        if node.variable not in self.symbol_table:
+            raise KeyError(
+                f"Undeclared variable: {node.variable}"
+            )
+
+        self.builder.store(
+            value,
+            self.symbol_table[node.variable]
+        )
+
+    # =========================================================
+    # FUNCTION CALLS
+    # =========================================================
+
+    def visit_call(self, node: Call) -> None:
+
+        if node.name == "printf":
+
+            fmt = self.create_global_string(
+                "%i\n",
+                "fmt"
+            )
+
+            fmt_ptr = self.builder.bitcast(
+                fmt,
+                ir.IntType(8).as_pointer()
+            )
+
+            node.args[0].accept(self)
+
+            value = self.stack.pop()
+
+            self.builder.call(
+                self.printf,
+                [fmt_ptr, value]
+            )
+
+            self.stack.append(
+                ir.Constant(self.intType, 0)
+            )
+
+            return
+
+        llvm_func = self.function_table[node.name]
+
+        args = []
+
+        for arg in node.args:
+
+            arg.accept(self)
+
+            args.append(
+                self.stack.pop()
+            )
+
+        result = self.builder.call(
+            llvm_func,
+            args
+        )
+
+        self.stack.append(result)
+
+    # =========================================================
+    # UNARY OPERATIONS
+    # =========================================================
 
     def visit_unary_op(self, node: UnaryOp) -> None:
+
         node.operand.accept(self)
 
         operand = self.stack.pop()
 
         if node.op == '-':
-            self.stack.append(builder.neg(operand))
 
-        elif node.op == '!':
-            zero = ir.Constant(operand.type, 0)
-            result = builder.icmp_signed('==', operand, zero)
+            result = self.builder.neg(operand)
+
             self.stack.append(result)
 
+        elif node.op == '!':
+
+            zero = ir.Constant(
+                operand.type,
+                0
+            )
+
+            result = self.builder.icmp_signed(
+                '==',
+                operand,
+                zero
+            )
+
+            self.stack.append(result)
+
+    # =========================================================
+    # BINARY OPERATIONS
+    # =========================================================
+
     def visit_binary_op(self, node: BinaryOp) -> None:
+
         node.lhs.accept(self)
         node.rhs.accept(self)
+
         rhs = self.stack.pop()
         lhs = self.stack.pop()
-        
+
         if node.op == '+':
-            self.stack.append(builder.add(lhs, rhs))
+
+            result = self.builder.add(lhs, rhs)
+
         elif node.op == '-':
-            self.stack.append(builder.sub(lhs, rhs))
+
+            result = self.builder.sub(lhs, rhs)
+
         elif node.op == '*':
-            self.stack.append(builder.mul(lhs,rhs))
+
+            result = self.builder.mul(lhs, rhs)
+
         elif node.op == '/':
-            self.stack.append(builder.sdiv(lhs,rhs))
-        elif node.op == "%":
-            self.stack.append(builder.srem(lhs, rhs))
+
+            result = self.builder.sdiv(lhs, rhs)
+
+        elif node.op == '%':
+
+            result = self.builder.srem(lhs, rhs)
+
         elif node.op == '==':
-            self.stack.append(builder.icmp_signed('==', lhs, rhs))
+
+            result = self.builder.icmp_signed(
+                '==',
+                lhs,
+                rhs
+            )
+
         elif node.op == '!=':
-            self.stack.append(builder.icmp_signed('!=', lhs, rhs))
+
+            result = self.builder.icmp_signed(
+                '!=',
+                lhs,
+                rhs
+            )
+
         elif node.op == '<':
-            self.stack.append(builder.icmp_signed('<', lhs, rhs))
+
+            result = self.builder.icmp_signed(
+                '<',
+                lhs,
+                rhs
+            )
+
         elif node.op == '<=':
-            self.stack.append(builder.icmp_signed('<=', lhs, rhs))
+
+            result = self.builder.icmp_signed(
+                '<=',
+                lhs,
+                rhs
+            )
+
         elif node.op == '>':
-            self.stack.append(builder.icmp_signed('>', lhs, rhs))
+
+            result = self.builder.icmp_signed(
+                '>',
+                lhs,
+                rhs
+            )
+
         elif node.op == '>=':
-            self.stack.append(builder.icmp_signed('>=', lhs, rhs))
+
+            result = self.builder.icmp_signed(
+                '>=',
+                lhs,
+                rhs
+            )
+
         elif node.op == '&&':
-            self.stack.append(builder.and_(lhs, rhs))
+
+            result = self.builder.and_(lhs, rhs)
+
         elif node.op == '||':
-            self.stack.append(builder.or_(lhs, rhs))
-            
-    def visit_while_statement(self, node: WhileStatement) -> None:
-        cond_block  = func.append_basic_block('while_cond')
-        body_block  = func.append_basic_block('while_body')
-        merge_block = func.append_basic_block('while_merge')
 
-        builder.branch(cond_block)
+            result = self.builder.or_(lhs, rhs)
 
-        builder.position_at_end(cond_block)
-        node.condition.accept(self)
-        cond      = self.stack.pop()
-        cond_bool = builder.icmp_signed('!=', cond, ir.Constant(intType, 0))
-        builder.cbranch(cond_bool, body_block, merge_block)
+        self.stack.append(result)
 
-        builder.position_at_end(body_block)
-        node.body.accept(self)
-        builder.branch(cond_block)
+    # =========================================================
+    # BLOCK
+    # =========================================================
 
-        builder.position_at_end(merge_block)
+    def visit_block(self, node: Block) -> None:
+
+        for decl in node.decls:
+            decl.accept(self)
+
+        for stmt in node.stmts:
+            stmt.accept(self)
+
+    # =========================================================
+    # IF STATEMENT
+    # =========================================================
 
     def visit_if_statement(self, node: IfStatement) -> None:
+
         node.condition.accept(self)
 
         cond = self.stack.pop()
 
-        cond_bool = builder.icmp_signed(
+        cond_bool = self.builder.icmp_signed(
             '!=',
             cond,
-            ir.Constant(intType, 0)
+            ir.Constant(self.intType, 0)
         )
 
         if node.else_stmt is None:
 
-            then_block  = func.append_basic_block('then')
-            merge_block = func.append_basic_block('merge')
+            then_block = self.current_function.append_basic_block(
+                'then'
+            )
 
-            builder.cbranch(cond_bool, then_block, merge_block)
+            merge_block = self.current_function.append_basic_block(
+                'merge'
+            )
 
-            builder.position_at_end(then_block)
+            self.builder.cbranch(
+                cond_bool,
+                then_block,
+                merge_block
+            )
+
+            # THEN
+
+            self.builder.position_at_end(then_block)
+
             node.then_stmt.accept(self)
 
-            if not builder.block.is_terminated:
-                builder.branch(merge_block)
+            if not self.builder.block.is_terminated:
+                self.builder.branch(merge_block)
 
-            builder.position_at_end(merge_block)
+            # MERGE
+
+            self.builder.position_at_end(merge_block)
 
         else:
 
-            then_block  = func.append_basic_block('then')
-            else_block  = func.append_basic_block('else')
-            merge_block = func.append_basic_block('merge')
+            then_block = self.current_function.append_basic_block(
+                'then'
+            )
 
-            builder.cbranch(cond_bool, then_block, else_block)
+            else_block = self.current_function.append_basic_block(
+                'else'
+            )
 
-            builder.position_at_end(then_block)
+            merge_block = self.current_function.append_basic_block(
+                'merge'
+            )
+
+            self.builder.cbranch(
+                cond_bool,
+                then_block,
+                else_block
+            )
+
+            # THEN
+
+            self.builder.position_at_end(then_block)
+
             node.then_stmt.accept(self)
 
-            if not builder.block.is_terminated:
-                builder.branch(merge_block)
+            if not self.builder.block.is_terminated:
+                self.builder.branch(merge_block)
 
-            builder.position_at_end(else_block)
+            # ELSE
+
+            self.builder.position_at_end(else_block)
+
             node.else_stmt.accept(self)
 
-            if not builder.block.is_terminated:
-                builder.branch(merge_block)
+            if not self.builder.block.is_terminated:
+                self.builder.branch(merge_block)
 
-            builder.position_at_end(merge_block)
-    
+            # MERGE
+
+            self.builder.position_at_end(merge_block)
+
+    # =========================================================
+    # WHILE
+    # =========================================================
+
+    def visit_while_statement(self, node: WhileStatement) -> None:
+
+        cond_block = self.current_function.append_basic_block(
+            'while_cond'
+        )
+
+        body_block = self.current_function.append_basic_block(
+            'while_body'
+        )
+
+        merge_block = self.current_function.append_basic_block(
+            'while_merge'
+        )
+
+        self.builder.branch(cond_block)
+
+        # CONDITION
+
+        self.builder.position_at_end(cond_block)
+
+        node.condition.accept(self)
+
+        cond = self.stack.pop()
+
+        cond_bool = self.builder.icmp_signed(
+            '!=',
+            cond,
+            ir.Constant(self.intType, 0)
+        )
+
+        self.builder.cbranch(
+            cond_bool,
+            body_block,
+            merge_block
+        )
+
+        # BODY
+
+        self.builder.position_at_end(body_block)
+
+        node.body.accept(self)
+
+        if not self.builder.block.is_terminated:
+            self.builder.branch(cond_block)
+
+        # MERGE
+
+        self.builder.position_at_end(merge_block)
+
+    # =========================================================
+    # SWITCH
+    # =========================================================
+
     def visit_switch_statement(self, node: SwitchStatement):
 
         node.expression.accept(self)
+
         switch_value = self.stack.pop()
 
-        end_block = func.append_basic_block('switch_end')
-        default_block = func.append_basic_block('default')
+        end_block = self.current_function.append_basic_block(
+            'switch_end'
+        )
 
-        switch_inst = builder.switch(
+        default_block = self.current_function.append_basic_block(
+            'default'
+        )
+
+        switch_inst = self.builder.switch(
             switch_value,
             default_block
         )
@@ -734,40 +1177,74 @@ class IRGenerator(Visitor):
 
         for case in node.cases:
 
-            block = func.append_basic_block('case')
+            block = self.current_function.append_basic_block(
+                'case'
+            )
+
             case_blocks.append((case, block))
 
             case.value.accept(self)
+
             case_value = self.stack.pop()
 
-            switch_inst.add_case(case_value, block)
+            switch_inst.add_case(
+                case_value,
+                block
+            )
 
         for case, block in case_blocks:
 
-            builder.position_at_end(block)
+            self.builder.position_at_end(block)
 
             for stmt in case.stmts:
                 stmt.accept(self)
 
-            builder.branch(end_block)
+            if not self.builder.block.is_terminated:
+                self.builder.branch(end_block)
 
-        builder.position_at_end(default_block)
+        # DEFAULT
+
+        self.builder.position_at_end(default_block)
 
         if node.default is not None:
+
             for stmt in node.default:
                 stmt.accept(self)
 
-        builder.branch(end_block)
+        if not self.builder.block.is_terminated:
+            self.builder.branch(end_block)
 
-        builder.position_at_end(end_block)
+        # END
 
-    def visit_return_statement(self, node):
+        self.builder.position_at_end(end_block)
+
+    # =========================================================
+    # RETURN
+    # =========================================================
+
+    def visit_return_statement(self, node: ReturnStatement):
+
         if node.expression is not None:
+
             node.expression.accept(self)
+
             value = self.stack.pop()
-            builder.ret(value)
+
+            self.builder.ret(value)
+
         else:
-            builder.ret_void()
+
+            self.builder.ret_void()
+
+    # =========================================================
+    # UNUSED
+    # =========================================================
+
+    def visit_case(self, node):
+        pass
+
+    def visit_parameter(self, node):
+        pass
 
 # Fibonacci
 
@@ -892,11 +1369,11 @@ int main()
 }
 """
 
-root = parser.parse(data2)
+root = parser.parse(data5)
 print(root)
 irgen = IRGenerator()
 root.accept(irgen)
-print(module)
+print(irgen.module)
 
 # %%
 print(irgen.stack)
